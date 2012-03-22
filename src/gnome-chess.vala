@@ -8,6 +8,41 @@ public class Application : Gtk.Application
     private Gtk.Builder builder;
     private Gtk.Builder preferences_builder;
     private Gtk.Window window;
+
+    /* Chess welcome screen widgets */
+    private Gtk.Widget grid_welcome;
+    private Gtk.Widget grid_select_game;
+    private Gtk.Widget grid_select_opponent;
+    private Gtk.Widget grid_select_remote_player;
+    private Gtk.Widget grid_game_options;
+    private Gtk.Widget grid_preferences;
+
+    private Gtk.Action radioaction_previous_game;
+    private Gtk.Action radioaction_new_game;
+
+    private Gtk.Widget togglebutton_robot;
+    private Gtk.Action radioaction_opponent_robot;
+    private Gtk.Action radioaction_opponent_local_player;
+    private Gtk.Action radioaction_opponent_remote_player;
+
+    private Gtk.ListStore player_list_model;
+
+    private Gtk.Widget togglebutton_easy;
+    private Gtk.Widget togglebutton_normal;
+    private Gtk.Widget togglebutton_difficult;
+    private Gtk.Action radioaction_easy;
+    private Gtk.Action radioaction_normal;
+    private Gtk.Action radioaction_difficult;
+    private Gtk.Action radioaction_white;
+    private Gtk.Action radioaction_black;
+    private Gtk.ListStore game_duration_model;
+
+    private Gtk.TreeView treeview_robots;
+    private Gtk.ListStore robot_list_model;
+    private Gtk.Widget done_button;
+
+    /* Chess game screen widgets */
+    private Gtk.Widget game_vbox;
     private Gtk.Widget save_menu;
     private Gtk.Widget save_as_menu;
     private Gtk.MenuItem fullscreen_menu;
@@ -80,6 +115,39 @@ public class Application : Gtk.Application
             warning ("Could not load UI: %s", e.message);
         }
         window = (Gtk.Window) builder.get_object ("gnome_chess_app");
+
+        grid_welcome = (Gtk.Widget) builder.get_object ("grid_welcome");
+        grid_select_game = (Gtk.Widget) builder.get_object ("grid_select_game");
+        grid_select_opponent = (Gtk.Widget) builder.get_object ("grid_select_opponent");
+        grid_select_remote_player = (Gtk.Widget) builder.get_object ("grid_select_remote_player");
+        grid_game_options = (Gtk.Widget) builder.get_object ("grid_game_options");
+        grid_preferences = (Gtk.Widget) builder.get_object ("grid_preferences");
+
+        radioaction_previous_game = (Gtk.Action) builder.get_object ("radioaction_previous_game");
+        radioaction_new_game = (Gtk.Action) builder.get_object ("radioaction_new_game");
+
+        togglebutton_robot = (Gtk.Widget) builder.get_object ("togglebutton_robot");
+        radioaction_opponent_robot = (Gtk.Action) builder.get_object ("radioaction_opponent_robot");
+        radioaction_opponent_local_player = (Gtk.Action) builder.get_object ("radioaction_opponent_local_player");
+        radioaction_opponent_remote_player = (Gtk.Action) builder.get_object ("radioaction_opponent_remote_player");
+
+        player_list_model = (Gtk.ListStore) builder.get_object ("player_list_model");
+
+        togglebutton_easy = (Gtk.Widget) builder.get_object ("togglebutton_easy");
+        togglebutton_normal = (Gtk.Widget) builder.get_object ("togglebutton_normal");
+        togglebutton_difficult = (Gtk.Widget) builder.get_object ("togglebutton_difficult");
+        radioaction_easy = (Gtk.Action) builder.get_object ("radioaction_easy");
+        radioaction_normal = (Gtk.Action) builder.get_object ("radioaction_normal");
+        radioaction_difficult = (Gtk.Action) builder.get_object ("radioaction_difficult");
+        radioaction_white = (Gtk.Action) builder.get_object ("radioaction_white");
+        radioaction_black = (Gtk.Action) builder.get_object ("radioaction_black");
+        game_duration_model = (Gtk.ListStore) builder.get_object ("game_duration_model");
+
+        treeview_robots = (Gtk.TreeView) builder.get_object ("treeview_robots");
+        robot_list_model = (Gtk.ListStore) treeview_robots.model;
+        done_button = (Gtk.Widget) builder.get_object ("button_preferences_done");
+
+        game_vbox = (Gtk.Widget) builder.get_object ("game_vbox");
         save_menu = (Gtk.Widget) builder.get_object ("menu_save_item");
         save_as_menu = (Gtk.Widget) builder.get_object ("menu_save_as_item");
         fullscreen_menu = (Gtk.MenuItem) builder.get_object ("fullscreen_item");
@@ -98,6 +166,7 @@ public class Application : Gtk.Application
         settings.bind ("show-history", builder.get_object ("navigation_box"), "visible", SettingsBindFlags.DEFAULT);
         var view_box = (Gtk.VBox) builder.get_object ("view_box");
         view_container = (Gtk.Container) builder.get_object ("view_container");
+
         builder.connect_signals (this);
 
         add_window (window);
@@ -135,18 +204,30 @@ public class Application : Gtk.Application
         foreach (var profile in ai_profiles)
             message ("Detected AI profile %s in %s", profile.name, profile.path);
 
-        /* Load from history if no game requested */
+        if (ai_profiles == null)
+        {
+            /* TODO: We may optionally allow one to install compatible AI
+             * engines using something like Packagekit, here or elsewhere */
+            togglebutton_robot.hide ();
+            show_robot_opponent_widgets (false);
+        }
+        else
+        {
+            /* TODO: Populate list of robots */
+        }
+
         if (game_file == null)
         {
             var unfinished = history.get_unfinished ();
             if (unfinished != null)
-                game_file = unfinished.data;
+                show_game_selector ();
             else
-                start_new_game ();
+                show_opponent_selector ();
         }
-
-        if (game_file != null)
+        else
         {
+            show_game_vbox ();
+
             try
             {
                 load_game (game_file, false);
@@ -959,6 +1040,167 @@ public class Application : Gtk.Application
         return false;
     }
 
+    private void show_game_selector ()
+    {
+        game_vbox.hide ();
+        grid_welcome.show ();
+
+        grid_select_game.show ();
+        grid_select_opponent.hide ();
+        grid_select_remote_player.hide ();
+        grid_game_options.hide ();
+        grid_preferences.hide ();
+    }
+
+    private void show_opponent_selector ()
+    {
+        game_vbox.hide ();
+        grid_welcome.show ();
+
+        grid_select_game.hide ();
+        grid_select_opponent.show ();
+        grid_select_remote_player.hide ();
+        grid_game_options.hide ();
+        grid_preferences.hide ();
+    }
+
+    private void show_remote_player_selector ()
+    {
+        game_vbox.hide ();
+        grid_welcome.show ();
+
+        grid_select_game.hide ();
+        grid_select_opponent.hide ();
+        grid_select_remote_player.show ();
+        grid_game_options.hide ();
+        grid_preferences.hide ();
+    }
+
+    private void show_game_options ()
+    {
+        game_vbox.hide ();
+        grid_welcome.show ();
+
+        grid_select_game.hide ();
+        grid_select_opponent.hide ();
+        grid_select_remote_player.hide ();
+        grid_game_options.show ();
+        grid_preferences.hide ();
+    }
+
+    private void show_preferences ()
+    {
+        game_vbox.hide ();
+        grid_welcome.show ();
+
+        grid_select_game.hide ();
+        grid_select_opponent.hide ();
+        grid_select_remote_player.hide ();
+        grid_game_options.hide ();
+        grid_preferences.show ();
+    }
+
+    private void show_game_vbox ()
+    {
+        game_vbox.show ();
+        grid_welcome.hide ();
+    }
+
+    [CCode (cname = "G_MODULE_EXPORT game_selected_cb", instance_pos = 1.1)]
+    public void game_selected_cb (Gtk.Action action) throws Error
+    {
+        if (action == radioaction_previous_game)
+        {
+            var unfinished = history.get_unfinished ();
+            var file = unfinished.data;
+            show_game_vbox ();
+            load_game (file, true);
+        }
+        else
+        {
+            show_opponent_selector ();
+        }
+    }
+
+    private void show_robot_opponent_widgets (bool robot_selected)
+    {
+        if (robot_selected)
+        {
+            togglebutton_easy.show ();
+            togglebutton_normal.show ();
+            togglebutton_difficult.show ();
+        }
+        else
+        {
+            togglebutton_easy.hide ();
+            togglebutton_normal.hide ();
+            togglebutton_difficult.hide ();
+        }
+    }
+
+    [CCode (cname = "G_MODULE_EXPORT opponent_changed_cb", instance_pos = -1)]
+    public void opponent_changed_cb (Gtk.Action action)
+    {
+        /* TODO: opponent settings */
+        if (action == radioaction_opponent_robot)
+        {
+            show_robot_opponent_widgets (true);
+            show_game_options ();
+        }
+        else
+        {
+            show_robot_opponent_widgets (false);
+            if (action == radioaction_opponent_local_player)
+            {
+                show_game_options ();
+            }
+            else
+            {
+                show_remote_player_selector ();
+            }
+        }
+    }
+//    [CCode (cname = "G_MODULE_EXPORT chat_clicked_cb", instance_pos = -1)]
+    [CCode (cname = "G_MODULE_EXPORT remote_player_selected_cb", instance_pos = -1)]
+    public void remote_player_selected_cb (Gtk.Button button)
+    {
+        /* TODO: Cache player details */
+        show_game_options ();
+    }
+
+    [CCode (cname = "G_MODULE_EXPORT remote_player_selection_cancelled_cb", instance_pos = -1)]
+    public void remote_player_selection_cancelled_cb (Gtk.Button button)
+    {
+        show_opponent_selector ();
+    }
+//    [CCode (cname = "G_MODULE_EXPORT color_selection_changed_cb", instance_pos = -1)]
+//    [CCode (cname = "G_MODULE_EXPORT difficulty_changed_cb", instance_pos = -1)]
+//    [CCode (cname = "G_MODULE_EXPORT duration_changed_cb", instance_pos = -1)]
+    [CCode (cname = "G_MODULE_EXPORT start_game_clicked_cb", instance_pos = -1)]
+    public void start_game_clicked_cb (Gtk.Button button)
+    {
+        show_game_vbox ();
+        start_new_game ();
+    }
+
+    [CCode (cname = "G_MODULE_EXPORT game_options_preferences_clicked_cb", instance_pos = -1)]
+    public void game_options_preferences_clicked_cb (Gtk.Button button)
+    {
+        show_preferences ();
+    }
+
+    [CCode (cname = "G_MODULE_EXPORT game_options_go_back_clicked_cb", instance_pos = -1)]
+    public void game_options_go_back_clicked_cb (Gtk.Button button)
+    {
+        show_opponent_selector ();
+    }
+
+    [CCode (cname = "G_MODULE_EXPORT preferences_done_cb", instance_pos = -1)]
+    public void preferences_done_cb (Gtk.Button button)
+    {
+        show_game_options ();
+    }
+
     [CCode (cname = "G_MODULE_EXPORT new_game_cb", instance_pos = -1)]
     public void new_game_cb (Gtk.Widget widget)
     {
@@ -987,7 +1229,7 @@ public class Application : Gtk.Application
 
         autosave ();
 
-        start_new_game ();
+        show_opponent_selector ();
     }
 
     [CCode (cname = "G_MODULE_EXPORT resign_cb", instance_pos = -1)]
