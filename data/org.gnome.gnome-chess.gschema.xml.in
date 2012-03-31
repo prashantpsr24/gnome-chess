@@ -31,12 +31,42 @@
   </enum>
 
   <schema id="org.gnome.gnome-chess.Settings" path="/org/gnome/gnome-chess/" gettext-domain="gnome-games">
-    <key name="width" type="i">
+    <key name="welcome-screen-width" type="i">
+      <default>600</default>
+      <_summary>The width of welcome screen</_summary>
+      <_description>The width of welcome screen in pixels.</_description>
+    </key>
+    <key name="welcome-screen-height" type="i">
+      <default>300</default>
+      <_summary>The height of the welcome screen</_summary>
+      <_description>The height of the welcome screen in pixels.</_description>
+    </key>
+    <key name="remote-player-selector-width" type="i">
+      <default>600</default>
+      <_summary>The width of the welcome screen</_summary>
+      <_description>The width of the welcome screen in pixels.</_description>
+    </key>
+    <key name="remote-player-selector-height" type="i">
+      <default>400</default>
+      <_summary>The height of remote player selector screen</_summary>
+      <_description>The height of remote player selector screen in pixels.</_description>
+    </key>
+    <key name="preferences-screen-width" type="i">
+      <default>600</default>
+      <_summary>The width of preferences screen</_summary>
+      <_description>The width of preferences screen in pixels.</_description>
+    </key>
+    <key name="preferences-screen-height" type="i">
+      <default>300</default>
+      <_summary>The height of preferences screen</_summary>
+      <_description>The height of preferences screen in pixels.</_description>
+    </key>
+    <key name="game-screen-width" type="i">
       <default>500</default>
       <_summary>The width of the window</_summary>
       <_description>The width of the main window in pixels.</_description>
     </key>
-    <key name="height" type="i">
+    <key name="game-screen-height" type="i">
       <default>550</default>
       <_summary>The height of the window</_summary>
       <_description>The height of the main window in pixels.</_description>

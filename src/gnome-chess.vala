@@ -1015,8 +1015,35 @@ public class Application : Gtk.Application
     {
         if (!settings.get_boolean ("maximized") && !settings.get_boolean ("fullscreen"))
         {
-            settings.set_int ("width", event.width);
-            settings.set_int ("height", event.height);
+            if (grid_welcome.visible)
+            {
+                if (grid_preferences.visible)
+                {
+                    settings.set_int ("preferences-screen-width", event.width);
+                    settings.set_int ("preferences-screen-height",
+                    event.height);
+                }
+                else
+                {
+                    if (grid_select_remote_player.visible)
+                    {
+                        settings.set_int ("remote-player-selector-width",
+                        event.width);
+                        settings.set_int ("remote-player-selector-height",
+                        event.height);
+                    }
+                    else
+                    {
+                        settings.set_int ("welcome-screen-width", event.width);
+                        settings.set_int ("welcome-screen-height", event.height);
+                    }
+                }
+            }
+            else
+            {
+                settings.set_int ("game-screen-width", event.width);
+                settings.set_int ("game-screen-height", event.height);
+            }
         }
 
         return false;
@@ -1044,6 +1071,8 @@ public class Application : Gtk.Application
     {
         game_vbox.hide ();
         grid_welcome.show ();
+        window.resize (settings.get_int ("welcome-screen-width"),
+            settings.get_int ("welcome-screen-height"));
 
         grid_select_game.show ();
         grid_select_opponent.hide ();
@@ -1056,6 +1085,8 @@ public class Application : Gtk.Application
     {
         game_vbox.hide ();
         grid_welcome.show ();
+        window.resize (settings.get_int ("welcome-screen-width"),
+            settings.get_int ("welcome-screen-height"));
 
         grid_select_game.hide ();
         grid_select_opponent.show ();
@@ -1068,6 +1099,8 @@ public class Application : Gtk.Application
     {
         game_vbox.hide ();
         grid_welcome.show ();
+        window.resize (settings.get_int ("remote-player-selector-width"),
+            settings.get_int ("remote-player-selector-height"));
 
         grid_select_game.hide ();
         grid_select_opponent.hide ();
@@ -1080,6 +1113,8 @@ public class Application : Gtk.Application
     {
         game_vbox.hide ();
         grid_welcome.show ();
+        window.resize (settings.get_int ("welcome-screen-width"),
+            settings.get_int ("welcome-screen-height"));
 
         grid_select_game.hide ();
         grid_select_opponent.hide ();
@@ -1092,6 +1127,8 @@ public class Application : Gtk.Application
     {
         game_vbox.hide ();
         grid_welcome.show ();
+        window.resize (settings.get_int ("preferences-screen-width"),
+            settings.get_int ("preferences-screen-height"));
 
         grid_select_game.hide ();
         grid_select_opponent.hide ();
@@ -1104,6 +1141,8 @@ public class Application : Gtk.Application
     {
         game_vbox.show ();
         grid_welcome.hide ();
+        window.resize (settings.get_int ("game-screen-width"),
+            settings.get_int ("game-screen-height"));
     }
 
     [CCode (cname = "G_MODULE_EXPORT game_selected_cb", instance_pos = 1.1)]
