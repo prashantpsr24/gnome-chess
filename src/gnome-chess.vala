@@ -1121,6 +1121,13 @@ public class Application : Gtk.Application
         grid_select_remote_player.hide ();
         grid_game_options.show ();
         grid_preferences.hide ();
+
+        /* Present settings */
+        bool play_as_white = settings.get_boolean ("play-as-white");
+        if (play_as_white)
+            radioaction_white.activate ();
+        else
+            radioaction_black.activate ();
     }
 
     private void show_preferences ()
@@ -1190,15 +1197,12 @@ public class Application : Gtk.Application
         {
             show_robot_opponent_widgets (false);
             if (action == radioaction_opponent_local_player)
-            {
                 show_game_options ();
-            }
             else
-            {
                 show_remote_player_selector ();
-            }
         }
     }
+
 //    [CCode (cname = "G_MODULE_EXPORT chat_clicked_cb", instance_pos = -1)]
     [CCode (cname = "G_MODULE_EXPORT remote_player_selected_cb", instance_pos = -1)]
     public void remote_player_selected_cb (Gtk.Button button)
@@ -1212,9 +1216,18 @@ public class Application : Gtk.Application
     {
         show_opponent_selector ();
     }
-//    [CCode (cname = "G_MODULE_EXPORT color_selection_changed_cb", instance_pos = -1)]
+
+    [CCode (cname = "G_MODULE_EXPORT color_selection_changed_cb", instance_pos = -1)]
+    public void color_selection_changed_cb (Gtk.Action action)
+    {
+        bool play_as_white = (action == radioaction_white) ? true : false;
+
+        settings.set_boolean ("play-as-white", play_as_white);
+    }
+
 //    [CCode (cname = "G_MODULE_EXPORT difficulty_changed_cb", instance_pos = -1)]
 //    [CCode (cname = "G_MODULE_EXPORT duration_changed_cb", instance_pos = -1)]
+
     [CCode (cname = "G_MODULE_EXPORT start_game_clicked_cb", instance_pos = -1)]
     public void start_game_clicked_cb (Gtk.Button button)
     {
