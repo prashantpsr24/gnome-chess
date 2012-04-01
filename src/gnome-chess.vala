@@ -1123,6 +1123,15 @@ public class Application : Gtk.Application
         grid_preferences.hide ();
 
         /* Present settings */
+        string difficulty = settings.get_string ("difficulty");
+        if (difficulty == "easy")
+            radioaction_easy.activate ();
+        else
+            if (difficulty == "normal")
+                radioaction_normal.activate ();
+            else
+                radioaction_difficult.activate ();
+
         bool play_as_white = settings.get_boolean ("play-as-white");
         if (play_as_white)
             radioaction_white.activate ();
@@ -1225,7 +1234,18 @@ public class Application : Gtk.Application
         settings.set_boolean ("play-as-white", play_as_white);
     }
 
-//    [CCode (cname = "G_MODULE_EXPORT difficulty_changed_cb", instance_pos = -1)]
+    [CCode (cname = "G_MODULE_EXPORT difficulty_changed_cb", instance_pos = -1)]
+    public void difficulty_changed_cb (Gtk.Action action)
+    {
+        if (action == radioaction_easy)
+            settings.set_string ("difficulty", "easy");
+        else
+            if (action == radioaction_normal)
+                settings.set_string ("difficulty", "normal");
+            else
+                settings.set_string ("difficulty", "hard");
+    }
+
 //    [CCode (cname = "G_MODULE_EXPORT duration_changed_cb", instance_pos = -1)]
 
     [CCode (cname = "G_MODULE_EXPORT start_game_clicked_cb", instance_pos = -1)]
