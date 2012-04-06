@@ -213,7 +213,26 @@ public class Application : Gtk.Application
         }
         else
         {
-            /* TODO: Populate list of robots */
+            /* Populate list of robots */
+
+            Gtk.TreeIter iter;
+            robot_list_model.clear ();
+
+            foreach (var profile in ai_profiles)
+            {
+                robot_list_model.append (out iter);
+                robot_list_model.set (iter, 0, profile.name, -1);
+            }
+
+            message ("No. of robots: %d", robot_list_model.iter_n_children (null));
+            treeview_robots.insert_column_with_attributes (-1, "Robot Name", new
+                Gtk.CellRendererText (), "text", 0);
+            treeview_robots.set_headers_visible (false);
+
+            var robot_selection = treeview_robots.get_selection ();
+            if (robot_list_model.get_iter_first (out iter))
+                robot_selection.select_iter (iter);
+
         }
 
         if (game_file == null)
@@ -1151,6 +1170,31 @@ public class Application : Gtk.Application
         grid_select_remote_player.hide ();
         grid_game_options.hide ();
         grid_preferences.show ();
+
+        if (((Gtk.TreeModel)robot_list_model).iter_n_children (null) != 0)
+        {
+            Gtk.TreeIter iter;
+            for (bool valid_iter = robot_list_model.get_iter_first (out iter);
+                 valid_iter;
+                 valid_iter = robot_list_model.iter_next (ref iter))
+            {
+                string robot = null;
+                robot_list_model.get (iter, 0, &robot, -1);
+
+                if (settings.get_string ("opponent") == robot)
+                {
+                    var robot_selection = treeview_robots.get_selection ();
+                    robot_selection.select_iter (iter);
+                }
+                break;
+            }
+
+            done_button.show ();
+        }
+        else
+        {
+            /* TODO: Present an option to install chess engines */
+        }
     }
 
     private void show_game_vbox ()
@@ -1270,6 +1314,14 @@ public class Application : Gtk.Application
     [CCode (cname = "G_MODULE_EXPORT preferences_done_cb", instance_pos = -1)]
     public void preferences_done_cb (Gtk.Button button)
     {
+        var robot_selection = treeview_robots.get_selection ();
+        Gtk.TreeIter iter;
+        robot_selection.get_selected (null, out iter);
+
+        string selected_robot_opponent = null;
+        treeview_robots.model.get (iter, 0, &selected_robot_opponent);
+        settings.set_string ("opponent", selected_robot_opponent);
+
         show_game_options ();
     }
 
