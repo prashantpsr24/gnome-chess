@@ -40,6 +40,8 @@ public class Application : Gtk.Application
     private Gtk.TreeView treeview_robots;
     private Gtk.ListStore robot_list_model;
     private Gtk.Widget done_button;
+    private Gtk.Widget grid_installable_robots;
+    private Gtk.Label label_install_robots;
 
     /* Chess game screen widgets */
     private Gtk.Widget game_vbox;
@@ -94,6 +96,39 @@ public class Application : Gtk.Application
         this.game_file = game_file;
     }
 
+    private StringBuilder get_supported_engines (string filename)
+    {
+       var file = new KeyFile ();
+       StringBuilder names = new StringBuilder ();
+
+       debug ("Loading AI names");
+       try
+       {
+           file.load_from_file (filename, KeyFileFlags.NONE);
+       }
+       catch (KeyFileError e)
+       {
+           warning ("Failed to load AI names: %s", e.message);
+           return names;
+       }
+       catch (FileError e)
+       {
+           warning ("Failed to load AI names: %s", e.message);
+           return names;
+       }
+
+       foreach (string name in file.get_groups ())
+       {
+           if (name != null)
+           {
+               names.append (name);
+               names.append_c ('\n');
+           }
+       }
+
+       return names;
+    }
+
     public override void startup ()
     {
         base.startup ();
@@ -146,6 +181,8 @@ public class Application : Gtk.Application
         treeview_robots = (Gtk.TreeView) builder.get_object ("treeview_robots");
         robot_list_model = (Gtk.ListStore) treeview_robots.model;
         done_button = (Gtk.Widget) builder.get_object ("button_preferences_done");
+        grid_installable_robots = (Gtk.Widget) builder.get_object ("grid_installable_robots");
+        label_install_robots = (Gtk.Label) builder.get_object ("label_install_robots");
 
         game_vbox = (Gtk.Widget) builder.get_object ("game_vbox");
         save_menu = (Gtk.Widget) builder.get_object ("menu_save_item");
@@ -200,16 +237,23 @@ public class Application : Gtk.Application
         settings.changed.connect (settings_changed_cb);
         settings_changed_cb (settings, "show-3d");
 
-        ai_profiles = load_ai_profiles (Path.build_filename (PKGDATADIR, "engines.conf", null));
+        string engines_file = Path.build_filename (PKGDATADIR, "engines.conf", null);
+        ai_profiles = load_ai_profiles (engines_file);
+
         foreach (var profile in ai_profiles)
             message ("Detected AI profile %s in %s", profile.name, profile.path);
 
         if (ai_profiles == null)
         {
-            /* TODO: We may optionally allow one to install compatible AI
-             * engines using something like Packagekit, here or elsewhere */
             togglebutton_robot.hide ();
             show_robot_opponent_widgets (false);
+
+            StringBuilder engine_names = get_supported_engines (engines_file);
+            engine_names.prepend ("No robot is currently installed.\n" +
+                "Here is a list of suported robots. Install atleast one for " +
+                "advanced options.\n\n");
+
+            label_install_robots.set_label (engine_names.str);
         }
         else
         {
@@ -258,7 +302,6 @@ public class Application : Gtk.Application
             }
         }
 
-        window.set_default_size (settings.get_int ("width"), settings.get_int ("height"));        
         if (settings.get_boolean ("fullscreen"))
             window.fullscreen ();
         else if (settings.get_boolean ("maximized"))
@@ -1158,6 +1201,22 @@ public class Application : Gtk.Application
             radioaction_black.activate ();
     }
 
+    private void show_robot_installation_choice (bool install)
+    {
+        if (install)
+        {
+            treeview_robots.hide ();
+            done_button.hide ();
+            grid_installable_robots.show ();
+        }
+        else
+        {
+            treeview_robots.show ();
+            done_button.show ();
+            grid_installable_robots.hide ();
+        }
+    }
+
     private void show_preferences ()
     {
         game_vbox.hide ();
@@ -1174,6 +1233,9 @@ public class Application : Gtk.Application
         if (((Gtk.TreeModel)robot_list_model).iter_n_children (null) != 0)
         {
             Gtk.TreeIter iter;
+
+            show_robot_installation_choice (false);
+
             for (bool valid_iter = robot_list_model.get_iter_first (out iter);
                  valid_iter;
                  valid_iter = robot_list_model.iter_next (ref iter))
@@ -1188,12 +1250,11 @@ public class Application : Gtk.Application
                 }
                 break;
             }
-
-            done_button.show ();
         }
         else
         {
-            /* TODO: Present an option to install chess engines */
+            /* Present an option to install chess engines */
+            show_robot_installation_choice (true);
         }
     }
 
@@ -1303,6 +1364,12 @@ public class Application : Gtk.Application
     public void game_options_preferences_clicked_cb (Gtk.Button button)
     {
         show_preferences ();
+    }
+
+    [CCode (cname = "G_MODULE_EXPORT preferences_back_clicked_cb", instance_pos = -1)]
+    public void preferences_back_clicked_cb (Gtk.Button button)
+    {
+        show_game_options ();
     }
 
     [CCode (cname = "G_MODULE_EXPORT game_options_go_back_clicked_cb", instance_pos = -1)]
