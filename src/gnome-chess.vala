@@ -35,7 +35,11 @@ public class Application : Gtk.Application
     private Gtk.Action radioaction_difficult;
     private Gtk.Action radioaction_white;
     private Gtk.Action radioaction_black;
-    private Gtk.ListStore game_duration_model;
+    private Gtk.ComboBox duration_combo;
+    private Gtk.Adjustment duration_adjustment;
+    private Gtk.Container custom_duration_box;
+    private Gtk.ComboBox custom_duration_units_combo;
+
 
     private Gtk.TreeView treeview_robots;
     private Gtk.ListStore robot_list_model;
@@ -67,10 +71,6 @@ public class Application : Gtk.Application
     private Gtk.Widget black_time_label;
 
     private Gtk.Dialog? preferences_dialog = null;
-    private Gtk.ComboBox duration_combo;
-    private Gtk.Adjustment duration_adjustment;
-    private Gtk.Container custom_duration_box;
-    private Gtk.ComboBox custom_duration_units_combo;
     private uint save_duration_timeout = 0;
     private Gtk.FileChooserDialog? open_dialog = null;
     private Gtk.InfoBar? open_dialog_info_bar = null;
@@ -176,7 +176,11 @@ public class Application : Gtk.Application
         radioaction_difficult = (Gtk.Action) builder.get_object ("radioaction_difficult");
         radioaction_white = (Gtk.Action) builder.get_object ("radioaction_white");
         radioaction_black = (Gtk.Action) builder.get_object ("radioaction_black");
-        game_duration_model = (Gtk.ListStore) builder.get_object ("game_duration_model");
+        duration_combo = (Gtk.ComboBox) builder.get_object ("duration_combo");
+        duration_adjustment = (Gtk.Adjustment) builder.get_object ("duration_adjustment");
+        custom_duration_box = (Gtk.Container) builder.get_object ("custom_duration_box");
+        custom_duration_units_combo = (Gtk.ComboBox) builder.get_object ("custom_duration_units_combo");
+
 
         treeview_robots = (Gtk.TreeView) builder.get_object ("treeview_robots");
         robot_list_model = (Gtk.ListStore) treeview_robots.model;
@@ -1199,6 +1203,8 @@ public class Application : Gtk.Application
             radioaction_white.activate ();
         else
             radioaction_black.activate ();
+
+        set_duration (settings.get_int ("duration"));
     }
 
     private void show_robot_installation_choice (bool install)
@@ -1350,8 +1356,6 @@ public class Application : Gtk.Application
             else
                 settings.set_string ("difficulty", "hard");
     }
-
-//    [CCode (cname = "G_MODULE_EXPORT duration_changed_cb", instance_pos = -1)]
 
     [CCode (cname = "G_MODULE_EXPORT start_game_clicked_cb", instance_pos = -1)]
     public void start_game_clicked_cb (Gtk.Button button)
