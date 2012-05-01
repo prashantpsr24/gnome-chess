@@ -146,10 +146,15 @@
       <_summary>true if the human player is playing white</_summary>
       <_description>true if the human player is playing white</_description>
     </key>
+    <key name="opponent-type" type="s">
+      <default>'robot'</default>
+      <_summary>The kind of opponent player</_summary>
+      <_description>Can be 'robot' to play against a chess engine, 'local-player' to play against a local player or 'remote-player' to play against a remote contact</_description>
+    </key>
     <key name="opponent" type="s">
       <default>''</default>
       <_summary>The opponent player</_summary>
-      <_description>Can be 'human' (play against another human player), '' (use the first available chess engine) or the name of a specific engine to play against</_description>
+      <_description>Can be 'human' (play against another human player), '' (use the first available chess engine), the name of a specific engine to play against or a string uniquely identifying a remote player</_description>
     </key>
     <key name="difficulty" enum="org.gnome.gnome-chess.Difficulty">
       <default>'easy'</default>

@@ -43,7 +43,7 @@ public class Application : Gtk.Application
 
     private Gtk.TreeView treeview_robots;
     private Gtk.ListStore robot_list_model;
-    private Gtk.Widget done_button;
+    private Gtk.Button done_button;
     private Gtk.Widget grid_installable_robots;
     private Gtk.Label label_install_robots;
 
@@ -184,7 +184,7 @@ public class Application : Gtk.Application
 
         treeview_robots = (Gtk.TreeView) builder.get_object ("treeview_robots");
         robot_list_model = (Gtk.ListStore) treeview_robots.model;
-        done_button = (Gtk.Widget) builder.get_object ("button_preferences_done");
+        done_button = (Gtk.Button) builder.get_object ("button_preferences_done");
         grid_installable_robots = (Gtk.Widget) builder.get_object ("grid_installable_robots");
         label_install_robots = (Gtk.Label) builder.get_object ("label_install_robots");
 
@@ -1256,6 +1256,17 @@ public class Application : Gtk.Application
                 }
                 break;
             }
+
+            if (settings.get_string ("opponent-type") == "robot")
+            {
+                treeview_robots.sensitive = true;
+                done_button.label = _("_Done");
+            }
+            else
+            {
+                treeview_robots.sensitive = false;
+                done_button.label = _("_Back");
+            }
         }
         else
         {
@@ -2114,19 +2125,23 @@ public class Application : Gtk.Application
         var duration = settings.get_int ("duration");
         if (duration > 0)
             pgn_game.time_control = "%d".printf (duration);
-        var engine_name = settings.get_string ("opponent");
-        var engine_level = settings.get_string ("difficulty");
-        if (engine_name != null && engine_name != "human")
+
+        if (settings.get_string ("opponent-type") == "robot")
         {
-            if (settings.get_boolean ("play-as-white"))
+            var engine_name = settings.get_string ("opponent");
+            var engine_level = settings.get_string ("difficulty");
+            if (engine_name != null)
             {
-                pgn_game.tags.insert ("BlackAI", engine_name);
-                pgn_game.tags.insert ("BlackLevel", engine_level);
-            }
-            else
-            {
-                pgn_game.tags.insert ("WhiteAI", engine_name);
-                pgn_game.tags.insert ("WhiteLevel", engine_level);
+                if (settings.get_boolean ("play-as-white"))
+                {
+                    pgn_game.tags.insert ("BlackAI", engine_name);
+                    pgn_game.tags.insert ("BlackLevel", engine_level);
+                }
+                else
+                {
+                    pgn_game.tags.insert ("WhiteAI", engine_name);
+                    pgn_game.tags.insert ("WhiteLevel", engine_level);
+                }
             }
         }
         start_game ();
