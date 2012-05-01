@@ -1318,9 +1318,10 @@ public class Application : Gtk.Application
     [CCode (cname = "G_MODULE_EXPORT opponent_changed_cb", instance_pos = -1)]
     public void opponent_changed_cb (Gtk.Action action)
     {
-        /* TODO: opponent settings */
         if (action == radioaction_opponent_robot)
         {
+            settings.set_string ("opponent-type", "robot");
+
             show_robot_opponent_widgets (true);
             show_game_options ();
         }
@@ -1328,9 +1329,15 @@ public class Application : Gtk.Application
         {
             show_robot_opponent_widgets (false);
             if (action == radioaction_opponent_local_player)
+            {
+                settings.set_string ("opponent-type", "local-player");
                 show_game_options ();
+            }
             else
+            {
+                settings.set_string ("opponent-type", "remote-player");
                 show_remote_player_selector ();
+            }
         }
     }
 
