@@ -33,6 +33,33 @@ PKG_CHECK_MODULES(TEST, [
 ])
 
 dnl ###########################################################################
+dnl Enable Networking
+dnl ###########################################################################
+
+AC_ARG_ENABLE([networking],
+    AS_HELP_STRING([--enable-networking=@<:@no/yes@:>@],
+        [build with Contacts and Telepathy networking support]),
+    [case "${enableval}" in
+        yes) networking=yes ;;
+         no) networking=no ;;
+          *) AC_MSG_ERROR([bad value ${enableval} for --enable-networking]) ;;
+     esac],
+    [networking=yes])
+
+if test "x$networking" = "xyes"; then
+    # Check for folks
+    FOLKS_REQUIRED=0.6.6
+
+    PKG_CHECK_MODULES([FOLKS],
+        [folks >= $FOLKS_REQUIRED
+         folks-telepathy >= $FOLKS_REQUIRED])
+    AC_SUBST([FOLKS_CFLAGS])
+    AC_SUBST([FOLKS_LIBS])
+fi
+AM_CONDITIONAL([ENABLE_NETWORKING], [test "x$networking" = "xyes"])
+
+
+dnl ###########################################################################
 dnl Internationalization
 dnl ###########################################################################
 
@@ -63,3 +90,14 @@ help/Makefile
 po/Makefile.in
 src/Makefile
 ])
+
+echo "
+Configuration:
+
+    Source code location:  ${srcdir}
+    Compiler:              ${CC}"
+
+echo "
+    Networking enabled:    ${networking}
+"
+

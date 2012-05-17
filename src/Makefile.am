@@ -66,6 +66,11 @@ gnome_chess_VALAFLAGS = \
     --pkg posix \
     --pkg sqlite3
 
+if ENABLE_NETWORKING
+gnome_chess_CFLAGS += $(FOLKS_CFLAGS)
+gnome_chess_LDADD += $(FOLKS_LIBS)
+endif
+
 CLEANFILES = \
 	$(patsubst %.vala,%.c,$(filter %.vala, $(SOURCES))) \
 	*_vala.stamp
