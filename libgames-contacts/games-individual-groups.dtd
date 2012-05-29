@@ -1,0 +1,16 @@
+<!--
+  DTD for groups of folks' individuals.
+-->
+
+<!-- Root element -->
+<!ELEMENT individuals (account)>
+
+<!ELEMENT account (group)+>
+<!ATTLIST account 
+	name CDATA #REQUIRED>
+
+<!-- Groups in roster -->
+<!ELEMENT group EMPTY>
+<!ATTLIST group
+   name CDATA #REQUIRED
+   expanded CDATA #REQUIRED>

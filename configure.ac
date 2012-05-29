@@ -1,6 +1,8 @@
 AC_INIT(gnome-chess, 3.7.2)
 LT_INIT
 
+AC_CONFIG_HEADERS([config.h])
+
 AM_INIT_AUTOMAKE([1.11 no-dist-gzip dist-xz foreign])
 AM_SILENT_RULES([yes])
 AM_MAINTAINER_MODE
