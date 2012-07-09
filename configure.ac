@@ -1,9 +1,11 @@
 AC_INIT(gnome-chess, 3.7.2)
+LT_INIT
+
 AM_INIT_AUTOMAKE([1.11 no-dist-gzip dist-xz foreign])
 AM_SILENT_RULES([yes])
 AM_MAINTAINER_MODE
 GNOME_MAINTAINER_MODE_DEFINES
-
+ 
 AM_PROG_VALAC([0.16.0])
 AM_PROG_CC_C_O
 
@@ -56,6 +58,16 @@ if test "x$networking" = "xyes"; then
     AC_SUBST([FOLKS_CFLAGS])
     AC_SUBST([FOLKS_LIBS])
 
+    PKG_CHECK_MODULES([GEE], [gee-1.0])
+    AC_SUBST([GEE_CFLAGS])
+    AC_SUBST([GEE_LIBS])
+
+    PKG_CHECK_MODULES([TELEPATHY], [telepathy-glib])
+    AC_SUBST([TELEPATHY_CFLAGS])
+    AC_SUBST([TELEPATHY_LIBS])
+
+    PKG_CHECK_MODULES([XML], [libxml-2.0])
+
     AC_DEFINE([ENABLE_NETWORKING],[1],[Defines whether Telepathy networking is enabled])
 else
     AC_DEFINE([ENABLE_NETWORKING],[0],
@@ -94,6 +106,7 @@ data/gnome-chess.desktop.in
 help/Makefile
 po/Makefile.in
 src/Makefile
+libgames-contacts/Makefile
 ])
 
 echo "

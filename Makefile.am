@@ -1,4 +1,4 @@
-SUBDIRS = data src help po
+SUBDIRS = libgames-contacts data src help po
 
 EXTRA_DIST = autogen.sh NEWS
 
