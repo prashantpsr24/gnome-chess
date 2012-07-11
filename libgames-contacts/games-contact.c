@@ -1104,13 +1104,17 @@ games_contact_equal (gconstpointer contact1,
 }
 
 static GamesCapabilities
-tp_caps_to_capabilities (TpCapabilities *caps)
+tp_caps_to_capabilities (GamesContact *self,
+    TpCapabilities *caps)
 {
   GamesCapabilities capabilities = 0;
 
   if (tp_capabilities_supports_dbus_tubes (caps, TP_HANDLE_TYPE_CONTACT,
-      "org.gnome.glchess"))
+      "org.gnome.glchess")) {
+    g_debug ("Contact %s(%s) has glchess playing capabilities",
+        games_contact_get_alias (self), games_contact_get_id (self));
     capabilities |= GAMES_CAPABILITIES_TUBE_GLCHESS;
+  }
 
   return capabilities;
 }
@@ -1121,10 +1125,13 @@ set_capabilities_from_tp_caps (GamesContact *self,
 {
   GamesCapabilities capabilities;
 
+  g_debug ("Got capabilities for contact %s(%s)",
+      games_contact_get_alias (self), games_contact_get_id (self));
+
   if (caps == NULL)
     return;
 
-  capabilities = tp_caps_to_capabilities (caps);
+  capabilities = tp_caps_to_capabilities (self, caps);
   games_contact_set_capabilities (self, capabilities);
 }
 

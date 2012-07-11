@@ -15,7 +15,12 @@ networking_headers = \
 	games-individual-store-manager.h \
 	games-individual-groups.h \
 	games-ui-utils.h \
-	games-contact.h
+	games-contact.h \
+	games-individual-view.h \
+	games-cell-renderer-text.h \
+	games-cell-renderer-expander.h \
+	games-live-search.h
+
 
 networking_sources = \
 	$(networking_headers) \
@@ -24,7 +29,12 @@ networking_sources = \
 	games-individual-store-manager.c \
 	games-individual-groups.c \
 	games-ui-utils.c \
-	games-contact.c
+	games-contact.c \
+	games-individual-view.c \
+	games-cell-renderer-text.c \
+	games-cell-renderer-expander.c \
+	games-live-search.c
+
 
 libgames_contacts_la_SOURCES = \
 	$(networking_sources)
@@ -39,6 +49,7 @@ libgames_contacts_la_CPPFLAGS = \
 	-DICON_THEME_DIRECTORY="\"$(datadir)/icons\""				\
 	-DLOCALE_DIRECTORY="\"$(datadir)/locale\""				\
 	-DGETTEXT_PACKAGE="\"gnome-chess\""				\
+	-DG_LOG_DOMAIN="\"Games\""
 	$(AM_CPPFLAGS)
 
 libgames_contacts_la_CFLAGS = \

@@ -39,6 +39,7 @@
 #include <folks/folks.h>
 
 #include "games-ui-utils.h"
+#include "games-live-search.h"
 
 /* Contact presence image names */
 
@@ -971,6 +972,70 @@ out:
   g_free (path);
   g_free (cmd);
 }
+
+/* @words = games_live_search_strip_utf8_string (@text);
+ *
+ * User has to pass both so we don't have to compute @words ourself each time
+ * this function is called. */
+gboolean
+games_individual_match_string (FolksIndividual *individual,
+    const char *text,
+    GPtrArray *words)
+{
+  const gchar *str;
+  GeeSet *personas;
+  GeeIterator *iter;
+  gboolean retval = FALSE;
+
+  /* check alias name */
+  str = folks_alias_details_get_alias (FOLKS_ALIAS_DETAILS (individual));
+
+  if (games_live_search_match_words (str, words))
+    return TRUE;
+
+  personas = folks_individual_get_personas (individual);
+
+  /* check contact id, remove the @server.com part */
+  iter = gee_iterable_iterator (GEE_ITERABLE (personas));
+  while (retval == FALSE && gee_iterator_next (iter))
+    {
+      FolksPersona *persona = gee_iterator_get (iter);
+      const gchar *p;
+
+      if (games_folks_persona_is_interesting (persona))
+        {
+          str = folks_persona_get_display_id (persona);
+
+          /* Accept the persona if @text is a full prefix of his ID; that allows
+           * user to find, say, a jabber contact by typing his JID. */
+          if (g_str_has_prefix (str, text))
+            {
+              retval = TRUE;
+            }
+          else
+            {
+              gchar *dup_str = NULL;
+              gboolean visible;
+
+              p = strstr (str, "@");
+              if (p != NULL)
+                str = dup_str = g_strndup (str, p - str);
+
+              visible = games_live_search_match_words (str, words);
+              g_free (dup_str);
+              if (visible)
+                retval = TRUE;
+            }
+        }
+      g_clear_object (&persona);
+    }
+  g_clear_object (&iter);
+
+  /* FIXME: Add more rules here, we could check phone numbers in
+   * contact's vCard for example. */
+  return retval;
+}
+
 
 /* Most of the workspace manipulation code has been copied from libwnck
  * Copyright (C) 2001 Havoc Pennington

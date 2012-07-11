@@ -126,10 +126,9 @@ void        games_url_show                            (GtkWidget        *parent,
 /* Misc */
 gint64      games_get_current_action_time             (void);
 
-gboolean games_individual_match_string (
-    FolksIndividual *individual,
-    const gchar *text,
-    GPtrArray *words);
+gboolean    games_individual_match_string             (FolksIndividual *individual,
+                                                       const gchar     *text,
+                                                       GPtrArray       *words);
 
 void games_launch_program (const gchar *dir,
     const gchar *name,
