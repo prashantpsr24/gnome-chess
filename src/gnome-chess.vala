@@ -21,6 +21,7 @@ public class Application : Gtk.Application
     private Gtk.Action radioaction_new_game;
 
     private Gtk.Widget togglebutton_robot;
+    private Gtk.Widget togglebutton_remote_player;
     private Gtk.Action radioaction_opponent_robot;
     private Gtk.Action radioaction_opponent_local_player;
     private Gtk.Action radioaction_opponent_remote_player;
@@ -162,6 +163,8 @@ public class Application : Gtk.Application
         radioaction_new_game = (Gtk.Action) builder.get_object ("radioaction_new_game");
 
         togglebutton_robot = (Gtk.Widget) builder.get_object ("togglebutton_robot");
+        togglebutton_remote_player = (Gtk.Widget) builder.get_object ("togglebutton_remote_player");
+
         radioaction_opponent_robot = (Gtk.Action) builder.get_object ("radioaction_opponent_robot");
         radioaction_opponent_local_player = (Gtk.Action) builder.get_object ("radioaction_opponent_local_player");
         radioaction_opponent_remote_player = (Gtk.Action) builder.get_object ("radioaction_opponent_remote_player");
@@ -282,6 +285,9 @@ public class Application : Gtk.Application
                 robot_selection.select_iter (iter);
 
         }
+
+        if (!ENABLE_NETWORKING)
+          togglebutton_remote_player.hide ();
 
         if (game_file == null)
         {

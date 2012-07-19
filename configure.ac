@@ -38,7 +38,7 @@ dnl ###########################################################################
 
 AC_ARG_ENABLE([networking],
     AS_HELP_STRING([--enable-networking=@<:@no/yes@:>@],
-        [build with Contacts and Telepathy networking support]),
+        [build with Contacts and Telepathy networking support (default: yes)]),
     [case "${enableval}" in
         yes) networking=yes ;;
          no) networking=no ;;
@@ -55,6 +55,11 @@ if test "x$networking" = "xyes"; then
          folks-telepathy >= $FOLKS_REQUIRED])
     AC_SUBST([FOLKS_CFLAGS])
     AC_SUBST([FOLKS_LIBS])
+
+    AC_DEFINE([ENABLE_NETWORKING],[1],[Defines whether Telepathy networking is enabled])
+else
+    AC_DEFINE([ENABLE_NETWORKING],[0],
+        [Defines whether Telepathy networking is enabled])
 fi
 AM_CONDITIONAL([ENABLE_NETWORKING], [test "x$networking" = "xyes"])
 
