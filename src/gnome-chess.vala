@@ -1622,33 +1622,6 @@ public class Application : Gtk.Application
         settings.bind ("show-3d-smooth", preferences_builder.get_object ("show_3d_smooth_check"),
                        "active", SettingsBindFlags.DEFAULT);
 
-        var side_combo = (Gtk.ComboBox) preferences_builder.get_object ("side_combo");
-        side_combo.set_active (settings.get_boolean ("play-as-white") ? 0 : 1);
-
-        var ai_combo = (Gtk.ComboBox) preferences_builder.get_object ("opponent_combo");
-        var ai_model = (Gtk.ListStore) ai_combo.model;
-        var opponent_name = settings.get_string ("opponent");
-        if (opponent_name == "human")
-            ai_combo.set_active (0);
-        foreach (var p in ai_profiles)
-        {
-            Gtk.TreeIter iter;
-            ai_model.append (out iter);
-            ai_model.set (iter, 0, p.name, 1, p.name, -1);
-            if (p.name == opponent_name || (opponent_name == "" && ai_combo.get_active () == -1))
-                ai_combo.set_active_iter (iter);
-        }
-        settings.bind ("show-history", ai_combo, "visible", SettingsBindFlags.SET);
-
-        var difficulty_combo = (Gtk.ComboBox) preferences_builder.get_object ("difficulty_combo");
-        set_combo (difficulty_combo, 1, settings.get_string ("difficulty"));
-
-        duration_combo = (Gtk.ComboBox) preferences_builder.get_object ("duration_combo");
-        duration_adjustment = (Gtk.Adjustment) preferences_builder.get_object ("duration_adjustment");
-        custom_duration_box = (Gtk.Container) preferences_builder.get_object ("custom_duration_box");
-        custom_duration_units_combo = (Gtk.ComboBox) preferences_builder.get_object ("custom_duration_units_combo");
-        set_duration (settings.get_int ("duration"));
-
         var orientation_combo = (Gtk.ComboBox) preferences_builder.get_object ("orientation_combo");
         set_combo (orientation_combo, 1, settings.get_string ("board-side"));
 
@@ -1689,39 +1662,6 @@ public class Application : Gtk.Application
             return null;
         combo.model.get (iter, value_index, out value, -1);
         return value;
-    }
-
-    [CCode (cname = "G_MODULE_EXPORT side_combo_changed_cb", instance_pos = -1)]
-    public void side_combo_changed_cb (Gtk.ComboBox combo)
-    {
-        Gtk.TreeIter iter;
-        if (!combo.get_active_iter (out iter))
-            return;
-        bool play_as_white;
-        combo.model.get (iter, 1, out play_as_white, -1);
-        settings.set_boolean ("play-as-white", play_as_white);
-    }
-
-    [CCode (cname = "G_MODULE_EXPORT opponent_combo_changed_cb", instance_pos = -1)]
-    public void opponent_combo_changed_cb (Gtk.ComboBox combo)
-    {
-        Gtk.TreeIter iter;
-        if (!combo.get_active_iter (out iter))
-            return;
-        string opponent;
-        combo.model.get (iter, 1, out opponent, -1);
-        settings.set_string ("opponent", opponent);
-    }
-
-    [CCode (cname = "G_MODULE_EXPORT difficulty_combo_changed_cb", instance_pos = -1)]
-    public void difficulty_combo_changed_cb (Gtk.ComboBox combo)
-    {
-        Gtk.TreeIter iter;
-        if (!combo.get_active_iter (out iter))
-            return;
-        string difficulty;
-        combo.model.get (iter, 1, out difficulty, -1);
-        settings.set_string ("difficulty", difficulty);
     }
 
     private void set_duration (int duration, bool simplify = true)
