@@ -17,7 +17,9 @@ iconscalablestatus_DATA = \
 	scalable/user-away.svg \
 	scalable/user-busy.svg \
 	scalable/user-idle.svg \
-	scalable/user-offline.svg
+	scalable/user-offline.svg \
+	scalable/goa.svg \
+	scalable/user.svg
 
 gtk_update_icon_cache = gtk-update-icon-cache -f -t $(pkgdatadir)/icons/hicolor
 
