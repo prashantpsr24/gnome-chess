@@ -2,6 +2,17 @@
 <interface>
   <!-- interface-requires gtk+ 3.0 -->
   <object class="GtkAccelGroup" id="accelgroup"/>
+  <object class="GtkRadioAction" id="radioaction_black">
+    <property name="group">radioaction_white</property>
+    <signal name="activate" handler="color_selection_changed_cb" swapped="no"/>
+  </object>
+  <object class="GtkRadioAction" id="radioaction_easy">
+    <signal name="activate" handler="difficulty_changed_cb" swapped="no"/>
+  </object>
+  <object class="GtkRadioAction" id="radioaction_difficult">
+    <property name="group">radioaction_easy</property>
+    <signal name="activate" handler="difficulty_changed_cb" swapped="no"/>
+  </object>
   <object class="GtkRadioAction" id="radioaction_new_game">
     <property name="group">radioaction_previous_game</property>
     <signal name="activate" handler="game_selected_cb" swapped="no"/>
@@ -10,15 +21,15 @@
     <property name="group">radioaction_easy</property>
     <signal name="activate" handler="difficulty_changed_cb" swapped="no"/>
   </object>
+  <object class="GtkRadioAction" id="radioaction_opponent_robot">
+    <signal name="activate" handler="opponent_changed_cb" swapped="no"/>
+  </object>
   <object class="GtkRadioAction" id="radioaction_opponent_local_player">
     <property name="group">radioaction_opponent_robot</property>
     <signal name="activate" handler="opponent_changed_cb" swapped="no"/>
   </object>
   <object class="GtkRadioAction" id="radioaction_opponent_remote_player">
     <property name="group">radioaction_opponent_robot</property>
-    <signal name="activate" handler="opponent_changed_cb" swapped="no"/>
-  </object>
-  <object class="GtkRadioAction" id="radioaction_opponent_robot">
     <signal name="activate" handler="opponent_changed_cb" swapped="no"/>
   </object>
   <object class="GtkRadioAction" id="radioaction_previous_game">
@@ -55,17 +66,6 @@
     <property name="step_increment">1</property>
     <property name="page_increment">10</property>
     <signal name="value-changed" handler="duration_changed_cb" swapped="no"/>
-  </object>
-  <object class="GtkRadioAction" id="radioaction_black">
-    <property name="group">radioaction_white</property>
-    <signal name="activate" handler="color_selection_changed_cb" swapped="no"/>
-  </object>
-  <object class="GtkRadioAction" id="radioaction_difficult">
-    <property name="group">radioaction_easy</property>
-    <signal name="activate" handler="difficulty_changed_cb" swapped="no"/>
-  </object>
-  <object class="GtkRadioAction" id="radioaction_easy">
-    <signal name="activate" handler="difficulty_changed_cb" swapped="no"/>
   </object>
   <object class="GtkListStore" id="duration_model">
     <columns>
@@ -115,8 +115,6 @@
       <object class="GtkGrid" id="grid_screen">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
-        <property name="n_rows">1</property>
-        <property name="n_columns">2</property>
         <child>
           <object class="GtkGrid" id="grid_welcome">
             <property name="visible">True</property>
@@ -126,7 +124,6 @@
             <property name="margin_top">6</property>
             <property name="margin_bottom">6</property>
             <property name="orientation">vertical</property>
-            <property name="n_rows">9</property>
             <child>
               <object class="GtkGrid" id="grid_select_game">
                 <property name="visible">True</property>
@@ -134,7 +131,6 @@
                 <property name="margin_bottom">30</property>
                 <property name="orientation">vertical</property>
                 <property name="row_spacing">12</property>
-                <property name="n_columns">1</property>
                 <child>
                   <object class="GtkLabel" id="label_welcome">
                     <property name="visible">True</property>
@@ -154,6 +150,8 @@
                 <child>
                   <object class="GtkToggleButton" id="togglebutton_continue_previous">
                     <property name="label" translatable="yes">_Continue with previous game</property>
+                    <property name="use_action_appearance">False</property>
+                    <property name="related_action">radioaction_previous_game</property>
                     <property name="width_request">400</property>
                     <property name="height_request">50</property>
                     <property name="visible">True</property>
@@ -176,6 +174,8 @@
                 <child>
                   <object class="GtkToggleButton" id="togglebutton_new_game">
                     <property name="label" translatable="yes">_New game</property>
+                    <property name="use_action_appearance">False</property>
+                    <property name="related_action">radioaction_new_game</property>
                     <property name="width_request">400</property>
                     <property name="height_request">50</property>
                     <property name="visible">True</property>
@@ -209,11 +209,11 @@
                 <property name="can_focus">False</property>
                 <property name="margin_bottom">30</property>
                 <property name="row_spacing">12</property>
-                <property name="n_rows">4</property>
-                <property name="n_columns">1</property>
                 <child>
                   <object class="GtkToggleButton" id="togglebutton_robot">
                     <property name="label" translatable="yes">R_obot</property>
+                    <property name="use_action_appearance">False</property>
+                    <property name="related_action">radioaction_opponent_robot</property>
                     <property name="width_request">400</property>
                     <property name="height_request">50</property>
                     <property name="visible">True</property>
@@ -236,6 +236,8 @@
                 <child>
                   <object class="GtkToggleButton" id="togglebutton_local_player">
                     <property name="label" translatable="yes">_Local Player</property>
+                    <property name="use_action_appearance">False</property>
+                    <property name="related_action">radioaction_opponent_local_player</property>
                     <property name="width_request">400</property>
                     <property name="height_request">50</property>
                     <property name="visible">True</property>
@@ -273,6 +275,8 @@
                 <child>
                   <object class="GtkToggleButton" id="togglebutton_remote_player">
                     <property name="label" translatable="yes">_Remote Player</property>
+                    <property name="use_action_appearance">False</property>
+                    <property name="related_action">radioaction_opponent_remote_player</property>
                     <property name="width_request">400</property>
                     <property name="height_request">50</property>
                     <property name="visible">True</property>
@@ -308,8 +312,6 @@
                 <property name="row_spacing">12</property>
                 <property name="column_spacing">6</property>
                 <property name="column_homogeneous">True</property>
-                <property name="n_rows">4</property>
-                <property name="n_columns">2</property>
                 <child>
                   <object class="GtkLabel" id="label_select_remote_player">
                     <property name="visible">True</property>
@@ -325,29 +327,9 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkTreeView" id="treeview_player_list">
-                    <property name="height_request">120</property>
-                    <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="margin_left">50</property>
-                    <property name="margin_right">50</property>
-                    <property name="hexpand">True</property>
-                    <property name="vexpand">True</property>
-                    <property name="model">player_list_model</property>
-                    <child internal-child="selection">
-                      <object class="GtkTreeSelection" id="treeview-selection1"/>
-                    </child>
-                  </object>
-                  <packing>
-                    <property name="left_attach">0</property>
-                    <property name="top_attach">1</property>
-                    <property name="width">2</property>
-                    <property name="height">1</property>
-                  </packing>
-                </child>
-                <child>
                   <object class="GtkButton" id="button_chat">
                     <property name="label" translatable="yes">_Chat</property>
+                    <property name="use_action_appearance">False</property>
                     <property name="width_request">200</property>
                     <property name="height_request">30</property>
                     <property name="visible">True</property>
@@ -369,6 +351,7 @@
                 <child>
                   <object class="GtkButton" id="button_cancel">
                     <property name="label" translatable="yes">C_ancel</property>
+                    <property name="use_action_appearance">False</property>
                     <property name="height_request">30</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
@@ -389,6 +372,7 @@
                 <child>
                   <object class="GtkButton" id="button_select_player">
                     <property name="label" translatable="yes">_Select</property>
+                    <property name="use_action_appearance">False</property>
                     <property name="height_request">30</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
@@ -403,6 +387,27 @@
                     <property name="left_attach">1</property>
                     <property name="top_attach">3</property>
                     <property name="width">1</property>
+                    <property name="height">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkScrolledWindow" id="scrolledwindow_remote_player">
+                    <property name="height_request">120</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="margin_left">50</property>
+                    <property name="margin_right">50</property>
+                    <property name="hexpand">True</property>
+                    <property name="vexpand">True</property>
+                    <property name="shadow_type">in</property>
+                    <child>
+                      <placeholder/>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">1</property>
+                    <property name="width">2</property>
                     <property name="height">1</property>
                   </packing>
                 </child>
@@ -422,8 +427,6 @@
                 <property name="row_spacing">12</property>
                 <property name="column_spacing">6</property>
                 <property name="column_homogeneous">True</property>
-                <property name="n_rows">6</property>
-                <property name="n_columns">8</property>
                 <child>
                   <object class="GtkLabel" id="label_game_options">
                     <property name="visible">True</property>
@@ -464,6 +467,7 @@
                 <child>
                   <object class="GtkButton" id="button_start">
                     <property name="label" translatable="yes">_Start</property>
+                    <property name="use_action_appearance">False</property>
                     <property name="height_request">30</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
@@ -484,6 +488,8 @@
                 <child>
                   <object class="GtkToggleButton" id="togglebutton_white">
                     <property name="label" translatable="yes">_White</property>
+                    <property name="use_action_appearance">False</property>
+                    <property name="related_action">radioaction_white</property>
                     <property name="height_request">30</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
@@ -505,6 +511,8 @@
                 <child>
                   <object class="GtkToggleButton" id="togglebutton_black">
                     <property name="label" translatable="yes">_Black</property>
+                    <property name="use_action_appearance">False</property>
+                    <property name="related_action">radioaction_black</property>
                     <property name="height_request">30</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
@@ -525,6 +533,8 @@
                 <child>
                   <object class="GtkToggleButton" id="togglebutton_easy">
                     <property name="label" translatable="yes">_Easy</property>
+                    <property name="use_action_appearance">False</property>
+                    <property name="related_action">radioaction_easy</property>
                     <property name="height_request">30</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
@@ -546,6 +556,8 @@
                 <child>
                   <object class="GtkToggleButton" id="togglebutton_normal">
                     <property name="label" translatable="yes">_Normal</property>
+                    <property name="use_action_appearance">False</property>
+                    <property name="related_action">radioaction_normal</property>
                     <property name="height_request">30</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
@@ -566,6 +578,8 @@
                 <child>
                   <object class="GtkToggleButton" id="togglebutton_difficult">
                     <property name="label" translatable="yes">_Difficult</property>
+                    <property name="use_action_appearance">False</property>
+                    <property name="related_action">radioaction_difficult</property>
                     <property name="height_request">30</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
@@ -585,6 +599,7 @@
                 </child>
                 <child>
                   <object class="GtkButton" id="button_preferences">
+                    <property name="use_action_appearance">False</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
@@ -611,6 +626,7 @@
                 </child>
                 <child>
                   <object class="GtkButton" id="button_back">
+                    <property name="use_action_appearance">False</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
@@ -746,7 +762,6 @@
                 <property name="margin_bottom">10</property>
                 <property name="row_spacing">12</property>
                 <property name="column_homogeneous">True</property>
-                <property name="n_rows">4</property>
                 <child>
                   <object class="GtkLabel" id="label_choice_of_robot">
                     <property name="visible">True</property>
@@ -762,29 +777,9 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkTreeView" id="treeview_robots">
-                    <property name="height_request">120</property>
-                    <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="margin_left">50</property>
-                    <property name="margin_right">50</property>
-                    <property name="hexpand">True</property>
-                    <property name="vexpand">True</property>
-                    <property name="model">robot_list_model</property>
-                    <child internal-child="selection">
-                      <object class="GtkTreeSelection" id="treeview-selection2"/>
-                    </child>
-                  </object>
-                  <packing>
-                    <property name="left_attach">0</property>
-                    <property name="top_attach">1</property>
-                    <property name="width">3</property>
-                    <property name="height">1</property>
-                  </packing>
-                </child>
-                <child>
                   <object class="GtkButton" id="button_preferences_done">
                     <property name="label" translatable="yes">_Done</property>
+                    <property name="use_action_appearance">False</property>
                     <property name="height_request">30</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
@@ -809,7 +804,6 @@
                     <property name="row_spacing">12</property>
                     <property name="column_spacing">6</property>
                     <property name="column_homogeneous">True</property>
-                    <property name="n_rows">2</property>
                     <child>
                       <object class="GtkLabel" id="label_install_robots">
                         <property name="visible">True</property>
@@ -828,6 +822,7 @@
                     <child>
                       <object class="GtkButton" id="button_preferences_back">
                         <property name="label" translatable="yes">_Back</property>
+                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
@@ -858,10 +853,34 @@
                   </packing>
                 </child>
                 <child>
-                  <placeholder/>
-                </child>
-                <child>
-                  <placeholder/>
+                  <object class="GtkScrolledWindow" id="scrolledwindow_robots">
+                    <property name="height_request">120</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="margin_left">50</property>
+                    <property name="margin_right">50</property>
+                    <property name="hexpand">True</property>
+                    <property name="vexpand">True</property>
+                    <property name="shadow_type">in</property>
+                    <child>
+                      <object class="GtkTreeView" id="treeview_robots">
+                        <property name="height_request">120</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="margin_left">50</property>
+                        <property name="margin_right">50</property>
+                        <property name="hexpand">True</property>
+                        <property name="vexpand">True</property>
+                        <property name="model">robot_list_model</property>
+                      </object>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">1</property>
+                    <property name="width">3</property>
+                    <property name="height">1</property>
+                  </packing>
                 </child>
                 <child>
                   <placeholder/>
@@ -955,9 +974,9 @@
                 <property name="can_focus">False</property>
                 <child>
                   <object class="GtkMenuItem" id="game_menu_item">
+                    <property name="use_action_appearance">False</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="use_action_appearance">False</property>
                     <property name="label" translatable="yes" comments="Game menu name">_Game</property>
                     <property name="use_underline">True</property>
                     <child type="submenu">
@@ -966,9 +985,9 @@
                         <child>
                           <object class="GtkImageMenuItem" id="new_menu_item">
                             <property name="label">gtk-new</property>
+                            <property name="use_action_appearance">False</property>
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="use_action_appearance">False</property>
                             <property name="use_underline">True</property>
                             <property name="use_stock">True</property>
                             <property name="accel_group">accelgroup</property>
@@ -978,9 +997,9 @@
                         <child>
                           <object class="GtkImageMenuItem" id="open_menu_item">
                             <property name="label">gtk-open</property>
+                            <property name="use_action_appearance">False</property>
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="use_action_appearance">False</property>
                             <property name="use_underline">True</property>
                             <property name="use_stock">True</property>
                             <property name="accel_group">accelgroup</property>
@@ -990,10 +1009,10 @@
                         <child>
                           <object class="GtkImageMenuItem" id="menu_save_item">
                             <property name="label">gtk-save</property>
+                            <property name="use_action_appearance">False</property>
                             <property name="visible">True</property>
                             <property name="sensitive">False</property>
                             <property name="can_focus">False</property>
-                            <property name="use_action_appearance">False</property>
                             <property name="use_underline">True</property>
                             <property name="use_stock">True</property>
                             <property name="accel_group">accelgroup</property>
@@ -1003,9 +1022,9 @@
                         <child>
                           <object class="GtkImageMenuItem" id="menu_save_as_item">
                             <property name="label">gtk-save-as</property>
+                            <property name="use_action_appearance">False</property>
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="use_action_appearance">False</property>
                             <property name="use_underline">True</property>
                             <property name="use_stock">True</property>
                             <property name="accel_group">accelgroup</property>
@@ -1021,10 +1040,10 @@
                         <child>
                           <object class="GtkImageMenuItem" id="undo_move_item">
                             <property name="label" translatable="yes" comments="Undo move menu item">_Undo Move</property>
+                            <property name="use_action_appearance">False</property>
                             <property name="visible">True</property>
                             <property name="sensitive">False</property>
                             <property name="can_focus">False</property>
-                            <property name="use_action_appearance">False</property>
                             <property name="use_underline">True</property>
                             <property name="image">undo_move_image</property>
                             <property name="use_stock">False</property>
@@ -1036,10 +1055,10 @@
                         <child>
                           <object class="GtkImageMenuItem" id="resign_item">
                             <property name="label" translatable="yes" comments="Save menu item">_Resign</property>
+                            <property name="use_action_appearance">False</property>
                             <property name="visible">True</property>
                             <property name="sensitive">False</property>
                             <property name="can_focus">False</property>
-                            <property name="use_action_appearance">False</property>
                             <property name="use_underline">True</property>
                             <property name="image">warning_image</property>
                             <property name="use_stock">False</property>
@@ -1049,9 +1068,9 @@
                         </child>
                         <child>
                           <object class="GtkMenuItem" id="claim_draw_item">
+                            <property name="use_action_appearance">False</property>
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="use_action_appearance">False</property>
                             <property name="label" translatable="yes" comments="Claim draw menu item">Claim _Draw</property>
                             <property name="use_underline">True</property>
                             <signal name="activate" handler="claim_draw_cb" swapped="no"/>
@@ -1066,9 +1085,9 @@
                         <child>
                           <object class="GtkImageMenuItem" id="quit_item">
                             <property name="label">gtk-quit</property>
+                            <property name="use_action_appearance">False</property>
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="use_action_appearance">False</property>
                             <property name="use_underline">True</property>
                             <property name="use_stock">True</property>
                             <property name="accel_group">accelgroup</property>
@@ -1081,9 +1100,9 @@
                 </child>
                 <child>
                   <object class="GtkMenuItem" id="settings_menu_item">
+                    <property name="use_action_appearance">False</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="use_action_appearance">False</property>
                     <property name="label" translatable="yes" comments="Settings menu item">_Settings</property>
                     <property name="use_underline">True</property>
                     <child type="submenu">
@@ -1092,9 +1111,9 @@
                         <child>
                           <object class="GtkImageMenuItem" id="fullscreen_item">
                             <property name="label">gtk-fullscreen</property>
+                            <property name="use_action_appearance">False</property>
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="use_action_appearance">False</property>
                             <property name="use_underline">True</property>
                             <property name="use_stock">True</property>
                             <property name="accel_group">accelgroup</property>
@@ -1105,9 +1124,9 @@
                         <child>
                           <object class="GtkImageMenuItem" id="preferences_item">
                             <property name="label">gtk-preferences</property>
+                            <property name="use_action_appearance">False</property>
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="use_action_appearance">False</property>
                             <property name="use_underline">True</property>
                             <property name="use_stock">True</property>
                             <property name="accel_group">accelgroup</property>
@@ -1120,9 +1139,9 @@
                 </child>
                 <child>
                   <object class="GtkMenuItem" id="help_menu_item">
+                    <property name="use_action_appearance">False</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="use_action_appearance">False</property>
                     <property name="label" translatable="yes" comments="Help menu item">_Help</property>
                     <property name="use_underline">True</property>
                     <child type="submenu">
@@ -1131,9 +1150,9 @@
                         <child>
                           <object class="GtkImageMenuItem" id="help_item">
                             <property name="label" translatable="yes" comments="Help contents menu item">_Contents</property>
+                            <property name="use_action_appearance">False</property>
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="use_action_appearance">False</property>
                             <property name="use_underline">True</property>
                             <property name="image">help_image</property>
                             <property name="use_stock">False</property>
@@ -1145,9 +1164,9 @@
                         <child>
                           <object class="GtkImageMenuItem" id="about_item">
                             <property name="label">gtk-about</property>
+                            <property name="use_action_appearance">False</property>
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="use_action_appearance">False</property>
                             <property name="use_underline">True</property>
                             <property name="use_stock">True</property>
                             <property name="accel_group">accelgroup</property>
@@ -1171,6 +1190,7 @@
                 <property name="can_focus">False</property>
                 <child>
                   <object class="GtkToolButton" id="new_game_button">
+                    <property name="use_action_appearance">False</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="tooltip_text" translatable="yes" comments="Tooltip for start new game toolbar button">Start a new game</property>
@@ -1188,6 +1208,7 @@
                 </child>
                 <child>
                   <object class="GtkToolButton" id="undo_move_button">
+                    <property name="use_action_appearance">False</property>
                     <property name="visible">True</property>
                     <property name="sensitive">False</property>
                     <property name="can_focus">False</property>
@@ -1205,6 +1226,7 @@
                 </child>
                 <child>
                   <object class="GtkToolButton" id="resign_button">
+                    <property name="use_action_appearance">False</property>
                     <property name="visible">True</property>
                     <property name="sensitive">False</property>
                     <property name="can_focus">False</property>
@@ -1244,6 +1266,7 @@
                         <property name="homogeneous">True</property>
                         <child>
                           <object class="GtkButton" id="first_move_button">
+                            <property name="use_action_appearance">False</property>
                             <property name="visible">True</property>
                             <property name="sensitive">False</property>
                             <property name="can_focus">True</property>
@@ -1268,6 +1291,7 @@
                         </child>
                         <child>
                           <object class="GtkButton" id="prev_move_button">
+                            <property name="use_action_appearance">False</property>
                             <property name="visible">True</property>
                             <property name="sensitive">False</property>
                             <property name="can_focus">True</property>
@@ -1291,6 +1315,7 @@
                         </child>
                         <child>
                           <object class="GtkButton" id="next_move_button">
+                            <property name="use_action_appearance">False</property>
                             <property name="visible">True</property>
                             <property name="sensitive">False</property>
                             <property name="can_focus">True</property>
@@ -1314,6 +1339,7 @@
                         </child>
                         <child>
                           <object class="GtkButton" id="last_move_button">
+                            <property name="use_action_appearance">False</property>
                             <property name="visible">True</property>
                             <property name="sensitive">False</property>
                             <property name="can_focus">True</property>
@@ -1440,11 +1466,11 @@
       </object>
     </child>
   </object>
-  <object class="GtkImage" id="help_image">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="stock">gtk-help</property>
-    <property name="icon-size">1</property>
+  <object class="GtkListStore" id="robot_list_model">
+    <columns>
+      <!-- column-name robot_name -->
+      <column type="gchararray"/>
+    </columns>
   </object>
   <object class="GtkListStore" id="history_model">
     <columns>
@@ -1452,20 +1478,6 @@
       <column type="gchararray"/>
       <!-- column-name move-number -->
       <column type="gint"/>
-    </columns>
-  </object>
-  <object class="GtkListStore" id="player_list_model">
-    <columns>
-      <!-- column-name remote_player_avatar -->
-      <column type="GdkPixbuf"/>
-      <!-- column-name remote_player_name -->
-      <column type="gchararray"/>
-    </columns>
-  </object>
-  <object class="GtkListStore" id="robot_list_model">
-    <columns>
-      <!-- column-name robot_name -->
-      <column type="gchararray"/>
     </columns>
   </object>
   <object class="GtkImage" id="undo_move_image">
@@ -1478,6 +1490,12 @@
     <property name="visible">True</property>
     <property name="can_focus">False</property>
     <property name="stock">gtk-dialog-warning</property>
+    <property name="icon-size">1</property>
+  </object>
+  <object class="GtkImage" id="help_image">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="stock">gtk-help</property>
     <property name="icon-size">1</property>
   </object>
   <object class="GtkSizeGroup" id="nav_bar_sizegroup"/>

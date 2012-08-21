@@ -26,8 +26,6 @@ public class Application : Gtk.Application
     private Gtk.Action radioaction_opponent_local_player;
     private Gtk.Action radioaction_opponent_remote_player;
 
-    private Gtk.ListStore player_list_model;
-
     private Gtk.Widget togglebutton_easy;
     private Gtk.Widget togglebutton_normal;
     private Gtk.Widget togglebutton_difficult;
@@ -168,8 +166,6 @@ public class Application : Gtk.Application
         radioaction_opponent_robot = (Gtk.Action) builder.get_object ("radioaction_opponent_robot");
         radioaction_opponent_local_player = (Gtk.Action) builder.get_object ("radioaction_opponent_local_player");
         radioaction_opponent_remote_player = (Gtk.Action) builder.get_object ("radioaction_opponent_remote_player");
-
-        player_list_model = (Gtk.ListStore) builder.get_object ("player_list_model");
 
         togglebutton_easy = (Gtk.Widget) builder.get_object ("togglebutton_easy");
         togglebutton_normal = (Gtk.Widget) builder.get_object ("togglebutton_normal");
