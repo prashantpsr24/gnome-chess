@@ -7,7 +7,8 @@ desktop_DATA = $(desktop_in_files:.desktop.in.in=.desktop)
 
 uidir = $(datadir)/gnome-chess
 ui_DATA = \
-	gnome-chess.ui \
+	new-game-launcher.ui \
+	gnome-chess-game-window.ui \
 	preferences.ui \
 	promotion-type-selector.ui
 
