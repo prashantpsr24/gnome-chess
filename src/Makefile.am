@@ -53,11 +53,13 @@ gnome_chess_CFLAGS = \
 	-DVERSION=\"$(VERSION)\" \
 	-DGETTEXT_PACKAGE=\"$(GETTEXT_PACKAGE)\" \
 	-DPKGDATADIR=\"@datadir@/gnome-chess\" \
+	-I$(top_srcdir)/libgames-contacts \
 	-DLOCALEDIR=\"@localedir@\" \
 	$(GNOME_CHESS_CFLAGS)
 
 gnome_chess_LDADD = \
-	$(GNOME_CHESS_LIBS)
+	$(GNOME_CHESS_LIBS) \
+	$(top_builddir)/libgames-contacts/libgames-contacts.la
 
 gnome_chess_VALAFLAGS = \
     --pkg gtk+-3.0 \
@@ -70,6 +72,11 @@ gnome_chess_VALAFLAGS = \
 if ENABLE_NETWORKING
 gnome_chess_CFLAGS += $(FOLKS_CFLAGS)
 gnome_chess_LDADD += $(FOLKS_LIBS)
+gnome_chess_VALAFLAGS += \
+	--pkg telepathy-glib \
+	--pkg folks \
+	--vapidir $(top_srcdir)/libgames-contacts \
+	--pkg GamesContacts-1.0
 endif
 
 CLEANFILES = \
