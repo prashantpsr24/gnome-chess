@@ -14,15 +14,13 @@ static GamesIndividualManager *ind_mgr;
 static GamesIndividualStore *store;
 static GamesIndividualView *tree_view;
 static GamesLiveSearch *search_widget;
-static TpAccountManager *am;
-static TpSimpleClientFactory *factory;
 
 static gint64 prepare_aggregator_timestamp;
 
 void populate_contacts (GamesIndividualView *tree_view, gpointer filter)
 {
   games_individual_view_set_custom_filter (tree_view,
-    (GtkTreeModelFilterVisibleFunc) filter, tree_view);
+    (GtkTreeModelFilterVisibleFunc) filter);
 
   games_individual_view_refilter (tree_view);
 }
@@ -60,7 +58,7 @@ all_players (GtkTreeModel *model,
     GtkTreeIter *iter,
     gpointer data)
 {
-  return individual_view_filter_default (model, iter, data,
+  return individual_view_filter_default (tree_view, model, iter,
       GAMES_ACTION_CHAT);
 }
 
@@ -69,7 +67,7 @@ chess_players (GtkTreeModel *model,
     GtkTreeIter *iter,
     gpointer data)
 {
-  return individual_view_filter_default (model, iter, data,
+  return individual_view_filter_default (tree_view, model, iter,
       GAMES_ACTION_PLAY_GLCHESS);
 }
 
@@ -79,8 +77,6 @@ window_closed (GtkWidget *window, gpointer data)
   g_object_unref (ind_mgr);
   g_ptr_array_free (filters, TRUE);
   g_object_unref (store);
-  tp_clear_object (&am);
-  tp_clear_object (&factory);
 
   /* Widgets internal to window will automatically be destroyed */
 
