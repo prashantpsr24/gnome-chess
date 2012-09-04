@@ -681,12 +681,11 @@ get_group (GtkTreeModel *model,
 }
 
 gboolean
-individual_view_filter_default (GtkTreeModel *model,
+individual_view_filter_default (GamesIndividualView *self,
+    GtkTreeModel *model,
     GtkTreeIter *iter,
-    gpointer user_data,
     GamesActionType interest)
 {
-  GamesIndividualView *self = GAMES_INDIVIDUAL_VIEW (user_data);
   FolksIndividual *individual = NULL;
   gboolean is_group, is_separator, valid;
   GtkTreeIter child_iter;
@@ -774,7 +773,7 @@ individual_view_filter_visible_func (GtkTreeModel *model,
     return self->priv->custom_filter (model, iter,
         self->priv->custom_filter_data);
   else
-    return individual_view_filter_default (model, iter, user_data,
+    return individual_view_filter_default (self, model, iter,
         GAMES_ACTION_CHAT);
 }
 
@@ -1195,11 +1194,10 @@ games_individual_view_start_search (GamesIndividualView *self)
 
 void
 games_individual_view_set_custom_filter (GamesIndividualView *self,
-    GtkTreeModelFilterVisibleFunc filter,
-    gpointer data)
+    GtkTreeModelFilterVisibleFunc filter)
 {
   self->priv->custom_filter = filter;
-  self->priv->custom_filter_data = data;
+  self->priv->custom_filter_data = self;
 }
 
 void

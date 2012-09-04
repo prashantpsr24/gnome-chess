@@ -5,8 +5,6 @@
 [CCode (cprefix = "Games", lower_case_cprefix = "games_")]
 namespace GamesContacts
 {
-    public const bool ENABLE_NETWORKING;
-
     [CCode (cheader_filename = "games-stock.h")]
     public const string STOCK_SCORES;
     [CCode (cheader_filename = "games-stock.h")]
@@ -199,9 +197,6 @@ namespace GamesContacts
         public void add_controls (string first_conf_key, ...);
     }
 
-
-#if ENABLE_NETWORKING
-
     [CCode (cheader_filename = "games-contact.h", copy_function = "g_boxed_copy", free_function = "g_boxed_free", type_id = "games_avatar_get_type ()")]
     [Compact]
     public class Avatar {
@@ -258,6 +253,18 @@ namespace GamesContacts
         public signal void presence_changed (uint object, uint p0);
     }
 
+      [CCode (cheader_filename = "games-individual-manager.h", type_id = "games_individual_manager_get_type ()")]
+      public class IndividualManager : GLib.Object {
+        [CCode (has_construct_function = false)]
+        protected IndividualManager ();
+        public static GamesContacts.IndividualManager dup_singleton ();
+        public bool get_contacts_loaded ();
+        public signal void contacts_loaded ();
+        public signal void favourites_changed (Folks.Individual object, bool p0);
+        public signal void groups_changed (Folks.Individual object, string p0, bool p1);
+        public signal void members_changed (string object, void* p0, void* p1, uint p2);
+      }
+
     [CCode (cheader_filename = "games-individual-store.h", type_id = "games_individual_store_get_type ()")]
     public class IndividualStore : Gtk.TreeStore, Gtk.Buildable, Gtk.TreeDragDest, Gtk.TreeDragSource, Gtk.TreeModel, Gtk.TreeSortable {
         [CCode (has_construct_function = false)]
@@ -292,15 +299,27 @@ namespace GamesContacts
         public bool show_protocols { get; set; }
     }
 
+    [CCode (cheader_filename = "games-individual-store-manager.h", type_id = "games_individual_store_manager_get_type ()")]
+    public class IndividualStoreManager : GamesContacts.IndividualStore, Gtk.Buildable, Gtk.TreeDragDest, Gtk.TreeDragSource, Gtk.TreeModel, Gtk.TreeSortable {
+      [CCode (has_construct_function = false)]
+      public IndividualStoreManager (GamesContacts.IndividualManager manager);
+      [NoAccessorMethod]
+      public GamesContacts.IndividualManager individual_manager { owned get; construct; }
+    }
+
+    [CCode (cheader_filename = "games-individual-view.h", has_target = false)]
+    public delegate bool ContactsFilterFunc (Gtk.TreeModel model, Gtk.TreeIter iter, void *data);
+
     [CCode (cheader_filename = "games-individual-view.h", type_id = "games_individual_view_get_type ()")]
     public class IndividualView : Gtk.TreeView, Atk.Implementor, Gtk.Buildable, Gtk.Scrollable {
         [CCode (has_construct_function = false)]
         public IndividualView (GamesContacts.IndividualStore store, GamesContacts.IndividualViewFeatureFlags view_features);
         [CCode (cname = "individual_view_filter_default")]
-        public static bool filter_default (Gtk.TreeModel model, Gtk.TreeIter iter, void* user_data, GamesContacts.ActionType interest);
+        public bool filter_default (Gtk.TreeModel model, Gtk.TreeIter iter, GamesContacts.ActionType interest);
         public bool get_show_offline ();
         public bool get_show_untrusted ();
         public bool is_searching ();
+        public void set_custom_filter (GamesContacts.ContactsFilterFunc filter);
         public void refilter ();
         public void select_first ();
         public void set_live_search (GamesContacts.LiveSearch search);
@@ -374,7 +393,5 @@ namespace GamesContacts
         NONE,
         GROUPS_SAVE
     }
-
-#endif
 }
 

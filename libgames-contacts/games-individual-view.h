@@ -110,14 +110,13 @@ void games_individual_view_set_store (GamesIndividualView *self,
 
 void games_individual_view_start_search (GamesIndividualView *self);
 
-gboolean individual_view_filter_default (GtkTreeModel *model,
+gboolean individual_view_filter_default (GamesIndividualView *self,
+    GtkTreeModel *model,
     GtkTreeIter *iter,
-    gpointer user_data,
     GamesActionType interest);
 
 void games_individual_view_set_custom_filter (GamesIndividualView *self,
-    GtkTreeModelFilterVisibleFunc filter,
-    gpointer data);
+    GtkTreeModelFilterVisibleFunc filter);
 
 void games_individual_view_refilter (GamesIndividualView *self);
 
