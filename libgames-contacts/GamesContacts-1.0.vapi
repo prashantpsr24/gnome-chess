@@ -218,6 +218,8 @@ namespace GamesContacts
         [CCode (has_construct_function = false)]
         protected Contact ();
         public bool can_do_action (GamesContacts.ActionType action_type);
+        public static GamesContacts.Contact dup_best_for_action (Folks.Individual individual,
+          GamesContacts.ActionType action_type);
         public bool can_play_glchess ();
         public static bool equal (void* contact1, void* contact2);
         public unowned string get_alias ();
@@ -393,5 +395,7 @@ namespace GamesContacts
         NONE,
         GROUPS_SAVE
     }
+    [CCode (cheader_filename = "games-channel-request-utils.h")]
+    public static void chat_with_contact (GamesContacts.Contact contact, int64 timestamp);
 }
 

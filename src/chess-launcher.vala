@@ -487,7 +487,31 @@ public class ChessLauncher : Gtk.Window
         }
     }
 
-//    [CCode (cname = "G_MODULE_EXPORT chat_clicked_cb", instance_pos = -1)]
+    [CCode (cname = "G_MODULE_EXPORT chat_clicked_cb", instance_pos = -1)]
+    public void chat_clicked_cb (Gtk.Button button)
+    {
+      unowned Gtk.TreeModel individual_store;
+      Gtk.TreeIter iter;
+      Folks.Individual? individual = null;
+      GamesContacts.Contact contact;
+      int64 timestamp = TelepathyGLib.user_action_time_from_x11 (0);
+
+      var selection = individual_view.get_selection ();
+      if (selection.get_selected (out individual_store, out iter))
+      {
+          (individual_store).@get (iter,
+              GamesContacts.IndividualStoreCol.INDIVIDUAL, out individual);
+
+          if (individual != null)
+          {
+              contact = GamesContacts.Contact.dup_best_for_action (
+                  individual, GamesContacts.ActionType.PLAY_GLCHESS);
+
+              GamesContacts.chat_with_contact (contact, timestamp);
+          }
+      }
+    }
+
     [CCode (cname = "G_MODULE_EXPORT remote_player_selected_cb", instance_pos = -1)]
     public void remote_player_selected_cb (Gtk.Button button)
     {
