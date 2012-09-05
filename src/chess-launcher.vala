@@ -45,6 +45,13 @@ public class ChessLauncher : Gtk.Window
     private Gtk.Action radioaction_opponent_local_player;
     private Gtk.Action radioaction_opponent_remote_player;
 
+    private Gtk.Widget contacts_box;
+    private Gtk.Widget scrolledwindow_remote_player;
+    private GamesContacts.IndividualStore? individual_store = null;
+    private GamesContacts.IndividualManager? individual_manager = null;
+    private GamesContacts.IndividualView? individual_view = null;
+    private GamesContacts.LiveSearch? search_widget;
+
     private Gtk.Widget togglebutton_easy;
     private Gtk.Widget togglebutton_normal;
     private Gtk.Widget togglebutton_difficult;
@@ -110,6 +117,9 @@ public class ChessLauncher : Gtk.Window
         radioaction_opponent_robot = (Gtk.Action) builder.get_object ("radioaction_opponent_robot");
         radioaction_opponent_local_player = (Gtk.Action) builder.get_object ("radioaction_opponent_local_player");
         radioaction_opponent_remote_player = (Gtk.Action) builder.get_object ("radioaction_opponent_remote_player");
+
+        scrolledwindow_remote_player = (Gtk.ScrolledWindow) builder.get_object ("scrolledwindow_remote_player");
+        contacts_box = (Gtk.Widget) builder.get_object ("contacts_box");
 
         togglebutton_easy = (Gtk.Widget) builder.get_object ("togglebutton_easy");
         togglebutton_normal = (Gtk.Widget) builder.get_object ("togglebutton_normal");
@@ -182,6 +192,36 @@ public class ChessLauncher : Gtk.Window
         if (!Config.ENABLE_NETWORKING)
           togglebutton_remote_player.hide ();
 
+        /* Remote players list */
+        individual_manager =
+            GamesContacts.IndividualManager.dup_singleton ();
+        individual_store = new GamesContacts.IndividualStoreManager (
+            individual_manager);
+        individual_view = new GamesContacts.IndividualView (
+            individual_store,
+            GamesContacts.IndividualViewFeatureFlags.GROUPS_SAVE);
+
+        /* Create searching capability for the treeview */
+        search_widget = new GamesContacts.LiveSearch (
+            individual_view as Gtk.Widget);
+        individual_view.set_live_search (search_widget);
+
+        /* Add filter for contacts capable of playing glchess */
+        individual_view.set_custom_filter ((model, iter, data)=>{
+              return (data as GamesContacts.IndividualView).filter_default (
+                  model, iter, GamesContacts.ActionType.PLAY_GLCHESS);
+            });
+
+        /* Evaluate contacts' presence using filter */
+        individual_view.refilter ();
+
+        /* Add to scrolled window and show */
+        (scrolledwindow_remote_player as Gtk.Container).add (individual_view);
+        scrolledwindow_remote_player.show ();
+        individual_view.show ();
+
+        (contacts_box as Gtk.Box).set_orientation (Gtk.Orientation.VERTICAL);
+        (contacts_box as Gtk.Container).add (search_widget);
     }
 
     ~ChessLauncher ()
@@ -284,7 +324,10 @@ public class ChessLauncher : Gtk.Window
 
         grid_select_game.hide ();
         grid_select_opponent.hide ();
+
         grid_select_remote_player.show ();
+        (contacts_box as Gtk.Widget).grab_focus ();
+
         grid_game_options.hide ();
         grid_preferences.hide ();
     }
