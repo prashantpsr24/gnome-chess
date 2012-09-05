@@ -19,7 +19,8 @@ networking_headers = \
 	games-individual-view.h \
 	games-cell-renderer-text.h \
 	games-cell-renderer-expander.h \
-	games-live-search.h
+	games-live-search.h \
+	games-channel-request-utils.h
 
 
 networking_sources = \
@@ -33,7 +34,8 @@ networking_sources = \
 	games-individual-view.c \
 	games-cell-renderer-text.c \
 	games-cell-renderer-expander.c \
-	games-live-search.c
+	games-live-search.c \
+	games-channel-request-utils.c
 
 
 libgames_contacts_la_SOURCES = \
