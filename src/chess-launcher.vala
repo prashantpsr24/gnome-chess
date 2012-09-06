@@ -51,6 +51,7 @@ public class ChessLauncher : Gtk.Window
     private GamesContacts.IndividualManager? individual_manager = null;
     private GamesContacts.IndividualView? individual_view = null;
     private GamesContacts.LiveSearch? search_widget;
+    private GamesContacts.Contact? contact = null;
 
     private Gtk.Widget togglebutton_easy;
     private Gtk.Widget togglebutton_normal;
@@ -515,8 +516,31 @@ public class ChessLauncher : Gtk.Window
     [CCode (cname = "G_MODULE_EXPORT remote_player_selected_cb", instance_pos = -1)]
     public void remote_player_selected_cb (Gtk.Button button)
     {
-        /* TODO: Cache player details */
-        show_game_options ();
+        Gtk.TreeModel model;
+        Gtk.TreeIter iter;
+
+        /* Cache player details */
+        var selection = individual_view.get_selection ();
+        if (selection.get_selected (out model, out iter))
+        {
+            Folks.Individual? individual = null;
+            model.@get (iter,
+                  GamesContacts.IndividualStoreCol.INDIVIDUAL,
+                  out individual);
+            if (individual != null)
+            {
+                contact = GamesContacts.Contact.dup_best_for_action (
+                    individual, GamesContacts.ActionType.PLAY_GLCHESS);
+                string opponent;
+
+                settings.set_string ("opponent", contact.id);
+
+                opponent = settings.get_string ("opponent");
+                debug ("opponent selected: %s\n", opponent);
+
+                show_game_options ();
+            }
+        }
     }
 
     [CCode (cname = "G_MODULE_EXPORT remote_player_selection_cancelled_cb", instance_pos = -1)]
@@ -545,11 +569,105 @@ public class ChessLauncher : Gtk.Window
                 settings.set_string ("difficulty", "hard");
     }
 
+    private void ensure_legacy_channel_async ()
+    {
+        TelepathyGLib.AccountChannelRequest req;
+        var ht = new HashTable<string, Variant> (str_hash, str_equal);
+
+        req = new TelepathyGLib.AccountChannelRequest (
+            contact.account, ht,
+            TelepathyGLib.user_action_time_from_x11 (0));
+
+        req.set_request_property (
+            TelepathyGLib.PROP_CHANNEL_CHANNEL_TYPE,
+            new Variant.string (TelepathyGLib.IFACE_CHANNEL_TYPE_TUBES));
+        req.set_request_property (
+            TelepathyGLib.PROP_CHANNEL_TARGET_HANDLE_TYPE,
+            new Variant.uint16 (TelepathyGLib.HandleType.CONTACT));
+        req.set_request_property (
+            TelepathyGLib.PROP_CHANNEL_TARGET_ID,
+            new Variant.string (contact.id));
+
+        req.ensure_channel_async.begin ("", null);
+    }
+
+    private void create_dbus_tube_channel ()
+    {
+        TelepathyGLib.AccountChannelRequest req;
+        var ht = new HashTable<string, Variant> (str_hash, str_equal);
+        bool channel_dispatched = true;
+        string service = TelepathyGLib.CLIENT_BUS_NAME_BASE + "Gnome.Chess";
+
+        /* Workaround for https://bugs.freedesktop.org/show_bug.cgi?id=47760 */
+        ensure_legacy_channel_async ();
+
+        req = new TelepathyGLib.AccountChannelRequest (
+            contact.account, ht,
+            TelepathyGLib.user_action_time_from_x11 (0));
+
+        req.set_request_property (
+            TelepathyGLib.PROP_CHANNEL_CHANNEL_TYPE,
+            new Variant.string (TelepathyGLib.IFACE_CHANNEL_TYPE_DBUS_TUBE));
+        req.set_request_property (
+            TelepathyGLib.PROP_CHANNEL_TARGET_HANDLE_TYPE,
+            new Variant.uint16 (TelepathyGLib.HandleType.CONTACT));
+        req.set_request_property (
+            TelepathyGLib.PROP_CHANNEL_TARGET_ID,
+            new Variant.string (contact.id));
+        req.set_request_property (
+            TelepathyGLib.PROP_CHANNEL_TYPE_DBUS_TUBE_SERVICE_NAME,
+            new Variant.string (service));
+
+        req.create_channel_async.begin (service, null,
+            (obj, res)=>{
+                try
+                {
+                     channel_dispatched = req.create_channel_async.end (res);
+                }
+                catch (Error e)
+                {
+                     Gtk.MessageDialog error_dialog =
+                      new Gtk.MessageDialog (
+                          this,
+                          Gtk.DialogFlags.DESTROY_WITH_PARENT|
+                          Gtk.DialogFlags.MODAL,
+                          Gtk.MessageType.INFO,
+                          Gtk.ButtonsType.OK,
+                          _("Failed to create channel"));
+                     error_dialog.format_secondary_text (
+                      _("The error is: %s"), e.message);
+
+                     error_dialog.run ();
+                     error_dialog.destroy ();
+
+                     show_game_selector ();
+
+                     /* Not yet done launching. Don't quit */
+                     return;
+                }
+
+                if (channel_dispatched)
+                  debug ("DBus channel with %s successfully dispatched.",
+                      contact.id);
+                else
+                  debug ("Unsuccessful in creating and dispatching DBus channel with %s.",
+                      contact.id);
+                /* signal start_game which eventually destroys this launcher */
+                start_game ();
+              }
+            );
+    }
+
     [CCode (cname = "G_MODULE_EXPORT start_game_clicked_cb", instance_pos = -1)]
     public void start_game_clicked_cb (Gtk.Button button)
     {
-        /* signal start_game which eventually destroys this launcher */
-        start_game ();
+        /* Create game channel with the selected remote contact if any;
+           eventually destroy */
+        if (contact != null)
+            create_dbus_tube_channel ();
+        else
+            /* signal start_game which eventually destroys this launcher */
+            start_game ();
     }
 
     [CCode (cname = "G_MODULE_EXPORT game_options_preferences_clicked_cb", instance_pos = -1)]
