@@ -1,4 +1,5 @@
 bin_PROGRAMS = gnome-chess
+libexec_PROGRAMS = gnome-chess-channel-handler
 
 noinst_PROGRAMS = test-chess-game test-chess-pgn
 
@@ -12,6 +13,29 @@ gnome_chess_SOURCES = \
 	3ds.vala \
 	gnome-chess.vala \
 	chess-launcher.vala \
+	ai-profile.vala \
+	chess-bitboard.vala \
+	chess-clock.vala \
+	chess-engine.vala \
+	chess-engine-cecp.vala \
+	chess-engine-uci.vala \
+	chess-game.vala \
+	chess-pgn.vala \
+	chess-scene.vala \
+	chess-view.vala \
+	chess-view-2d.vala \
+	chess-view-3d.vala \
+	history.vala
+
+gnome_chess_channel_handler_SOURCES = \
+	config.vapi \
+	gl.vapi \
+	glu.vapi \
+	glx.vapi \
+	3ds.vala \
+	gnome-chess.vala \
+	chess-launcher.vala \
+	gnome-chess-channel-handler.vala \
 	ai-profile.vala \
 	chess-bitboard.vala \
 	chess-clock.vala \
@@ -78,6 +102,11 @@ gnome_chess_VALAFLAGS += \
 	--vapidir $(top_srcdir)/libgames-contacts \
 	--pkg GamesContacts-1.0
 endif
+
+gnome_chess_channel_handler_CFLAGS = $(gnome_chess_CFLAGS)
+gnome_chess_channel_handler_LDADD = $(gnome_chess_LDADD)
+gnome_chess_channel_handler_VALAFLAGS = $(gnome_chess_VALAFLAGS)
+
 
 CLEANFILES = \
 	$(patsubst %.vala,%.c,$(filter %.vala, $(SOURCES))) \

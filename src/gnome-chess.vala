@@ -3,55 +3,55 @@ extern void gtk_file_filter_set_name (Gtk.FileFilter filter, string name);
 
 public class Application : Gtk.Application
 {
-    private Settings settings;
+    protected Settings settings;
     private History history;
     private Gtk.Builder builder;
-    private Gtk.Builder preferences_builder;
+    protected Gtk.Builder preferences_builder;
     private ChessLauncher? launcher = null;
     private Gtk.Window? window = null;
 
     /* Chess game screen widgets */
-    private Gtk.Widget game_vbox;
+    protected Gtk.Widget game_vbox;
     private Gtk.Widget save_menu;
     private Gtk.Widget save_as_menu;
-    private Gtk.MenuItem fullscreen_menu;
-    private Gtk.InfoBar info_bar;
-    private Gtk.Label info_title_label;
-    private Gtk.Label info_label;
-    private Gtk.Container view_container;
-    private ChessScene scene;
-    private ChessView view;
+    protected Gtk.MenuItem fullscreen_menu;
+    protected Gtk.InfoBar info_bar;
+    protected Gtk.Label info_title_label;
+    protected Gtk.Label info_label;
+    protected Gtk.Container view_container;
+    protected ChessScene scene;
+    protected ChessView view;
     private Gtk.Widget undo_menu;
     private Gtk.Widget undo_button;
-    private Gtk.Widget resign_menu;
+    protected Gtk.Widget resign_menu;
     private Gtk.Widget resign_button;
-    private Gtk.Widget first_move_button;
-    private Gtk.Widget prev_move_button;
-    private Gtk.Widget next_move_button;
-    private Gtk.Widget last_move_button;
-    private Gtk.ComboBox history_combo;
-    private Gtk.Widget white_time_label;
-    private Gtk.Widget black_time_label;
+    protected Gtk.Widget first_move_button;
+    protected Gtk.Widget prev_move_button;
+    protected Gtk.Widget next_move_button;
+    protected Gtk.Widget last_move_button;
+    protected Gtk.ComboBox history_combo;
+    protected Gtk.Widget white_time_label;
+    protected Gtk.Widget black_time_label;
 
-    private Gtk.Dialog? preferences_dialog = null;
+    protected Gtk.Dialog? preferences_dialog = null;
     private Gtk.FileChooserDialog? open_dialog = null;
     private Gtk.InfoBar? open_dialog_info_bar = null;
     private Gtk.Label? open_dialog_error_label = null;
     private Gtk.FileChooserDialog? save_dialog = null;
     private Gtk.InfoBar? save_dialog_info_bar = null;
     private Gtk.Label? save_dialog_error_label = null;
-    private Gtk.AboutDialog? about_dialog = null;
+    protected Gtk.AboutDialog? about_dialog = null;
 
     private PGNGame pgn_game;
-    private ChessGame game;
+    protected ChessGame game;
     private bool in_history;
     private File game_file;
     private bool game_needs_saving;
     private string engines_file;
     private List<AIProfile> ai_profiles;
-    private ChessPlayer? opponent = null;
+    protected ChessPlayer? opponent = null;
     private ChessPlayer? human_player = null;
-    private ChessEngine? opponent_engine = null;
+    protected ChessEngine? opponent_engine = null;
 
     public Application (File? game_file)
     {
