@@ -12,6 +12,7 @@ gnome_chess_SOURCES = \
 	glx.vapi \
 	3ds.vala \
 	gnome-chess.vala \
+	gnome-chess-application.vala \
 	chess-launcher.vala \
 	ai-profile.vala \
 	chess-bitboard.vala \
@@ -33,7 +34,7 @@ gnome_chess_channel_handler_SOURCES = \
 	glu.vapi \
 	glx.vapi \
 	3ds.vala \
-	gnome-chess.vala \
+	gnome-chess-application.vala \
 	chess-launcher.vala \
 	gnome-chess-channel-handler.vala \
 	ai-profile.vala \
