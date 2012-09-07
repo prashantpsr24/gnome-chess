@@ -1520,46 +1520,62 @@ public class Application : Gtk.Application
 
     private void start_new_game ()
     {
-        if (window == null)
+        string opponent_type = settings.get_string ("opponent-type");
+        if (opponent_type == "remote-player")
         {
-          create_game_window ();
-          add_window (window);
+            string contact_id = settings.get_string ("opponent");
+            debug ("Opponent type selected: %s", opponent_type);
+            debug ("Contact-id: %s", contact_id);
+            debug ("Requested a glchess channel to %s. glchess-channel-handler takes charge. Now quitting", contact_id);
+            quit_game ();
         }
 
-        in_history = true;
-        game_file = null;
-
-        pgn_game = new PGNGame ();
-        var now = new DateTime.now_local ();
-        pgn_game.date = now.format ("%Y.%m.%d");
-        pgn_game.time = now.format ("%H:%M:%S");
-        var duration = settings.get_int ("duration");
-        if (duration > 0)
-            pgn_game.time_control = "%d".printf (duration);
-
-        if (settings.get_string ("opponent-type") == "robot")
+        else
         {
-            var engine_name = settings.get_string ("opponent");
-            var engine_level = settings.get_string ("difficulty");
-            if (engine_name != null)
+
+            if (window == null)
             {
-                if (settings.get_boolean ("play-as-white"))
+              create_game_window ();
+              add_window (window);
+            }
+
+            in_history = true;
+            game_file = null;
+
+            pgn_game = new PGNGame ();
+            var now = new DateTime.now_local ();
+            pgn_game.date = now.format ("%Y.%m.%d");
+            pgn_game.time = now.format ("%H:%M:%S");
+            var duration = settings.get_int ("duration");
+            if (duration > 0)
+                pgn_game.time_control = "%d".printf (duration);
+
+            if (settings.get_string ("opponent-type") == "robot")
+            {
+                var engine_name = settings.get_string ("opponent");
+                var engine_level = settings.get_string ("difficulty");
+                if (engine_name != null)
                 {
-                    pgn_game.tags.insert ("BlackAI", engine_name);
-                    pgn_game.tags.insert ("BlackLevel", engine_level);
-                }
-                else
-                {
-                    pgn_game.tags.insert ("WhiteAI", engine_name);
-                    pgn_game.tags.insert ("WhiteLevel", engine_level);
+                    if (settings.get_boolean ("play-as-white"))
+                    {
+                        pgn_game.tags.insert ("BlackAI", engine_name);
+                        pgn_game.tags.insert ("BlackLevel", engine_level);
+                    }
+                    else
+                    {
+                        pgn_game.tags.insert ("WhiteAI", engine_name);
+                        pgn_game.tags.insert ("WhiteLevel", engine_level);
+                    }
                 }
             }
-        }
-        start_game ();
 
-        display_window ();
-        if (launcher != null)
-          launcher.destroy ();
+            start_game ();
+
+            display_window ();
+            if (launcher != null)
+              launcher.destroy ();
+
+        }
     }
 
     [CCode (cname = "load_game_handler", instance_pos = -1)]
