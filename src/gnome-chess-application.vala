@@ -579,7 +579,7 @@ public class Application : Gtk.Application
     {
         launcher = null;
 
-        if (window == null)
+        if (window == null || !(window as Gtk.Widget).get_visible ())
           quit_game ();
     }
 
