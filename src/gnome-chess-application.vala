@@ -146,7 +146,12 @@ public class Application : Gtk.Application
         prev_move_button = (Gtk.Widget) builder.get_object ("prev_move_button");
         next_move_button = (Gtk.Widget) builder.get_object ("next_move_button");
         last_move_button = (Gtk.Widget) builder.get_object ("last_move_button");
+
         history_combo = (Gtk.ComboBox) builder.get_object ("history_combo");
+        /* Assign a model here instead of loading from ui */
+        var history_model = new Gtk.ListStore (2, typeof (string), typeof (int));
+        history_combo.set_model (history_model);
+
         white_time_label = (Gtk.Widget) builder.get_object ("white_time_label");
         black_time_label = (Gtk.Widget) builder.get_object ("black_time_label");
         settings.bind ("show-toolbar", builder.get_object ("toolbar"), "visible", SettingsBindFlags.DEFAULT);
