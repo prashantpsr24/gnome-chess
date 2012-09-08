@@ -8,13 +8,13 @@ public class Application : Gtk.Application
     private History history;
     private Gtk.Builder builder;
     protected Gtk.Builder preferences_builder;
-    private ChessLauncher? launcher = null;
+    protected ChessLauncher? launcher = null;
     private Gtk.Window? window = null;
 
     /* Chess game screen widgets */
     protected Gtk.Widget game_vbox;
-    private Gtk.Widget save_menu;
-    private Gtk.Widget save_as_menu;
+    protected Gtk.Widget save_menu;
+    protected Gtk.Widget save_as_menu;
     protected Gtk.MenuItem fullscreen_menu;
     protected Gtk.InfoBar info_bar;
     protected Gtk.Label info_title_label;
@@ -43,7 +43,7 @@ public class Application : Gtk.Application
     private Gtk.Label? save_dialog_error_label = null;
     protected Gtk.AboutDialog? about_dialog = null;
 
-    private PGNGame pgn_game;
+    protected PGNGame pgn_game;
     protected ChessGame game;
     private bool in_history;
     private File game_file;
@@ -200,7 +200,7 @@ public class Application : Gtk.Application
             opponent_engine.stop ();
     }
 
-    public PieceType show_promotion_type_selector ()
+    protected PieceType show_promotion_type_selector ()
     {
         Gtk.Builder promotion_type_selector_builder;
 
@@ -280,7 +280,7 @@ public class Application : Gtk.Application
         image.set_from_pixbuf (pixbuf);
     }
 
-    enum PromotionTypeSelected
+    protected enum PromotionTypeSelected
     {
         QUEEN,
         KNIGHT,
@@ -289,7 +289,7 @@ public class Application : Gtk.Application
     }
 
     /* Quits the application */
-    public void quit_game ()
+    private void quit_game ()
     {
         autosave ();
         settings.sync ();
@@ -355,7 +355,7 @@ public class Application : Gtk.Application
         }
     }
 
-    private void update_history_panel ()
+    protected void update_history_panel ()
     {
         if (game == null)
             return;
@@ -386,7 +386,7 @@ public class Application : Gtk.Application
         history_combo.set_active (move_number);
     }
 
-    private void scene_changed_cb (ChessScene scene)
+    protected void scene_changed_cb (ChessScene scene)
     {
         update_history_panel ();
     }
@@ -612,7 +612,7 @@ public class Application : Gtk.Application
             opponent_engine.start_game ();
     }
 
-    private void game_clock_tick_cb (ChessClock clock)
+    protected void game_clock_tick_cb (ChessClock clock)
     {
         white_time_label.queue_draw ();
         black_time_label.queue_draw ();
@@ -624,7 +624,7 @@ public class Application : Gtk.Application
             opponent_engine.request_move ();
     }
 
-    private void set_move_text (Gtk.TreeIter iter, ChessMove move)
+    protected void set_move_text (Gtk.TreeIter iter, ChessMove move)
     {
         /* Note there are no move formats for pieces taking kings and this is not allowed in Chess rules */
         const string human_descriptions[] = {/* Human Move String: Description of a white pawn moving from %1$s to %2s, e.g. 'c2 to c4' */
@@ -811,7 +811,7 @@ public class Application : Gtk.Application
         model.set (iter, 0, label, -1);
     }
 
-    private void game_move_cb (ChessGame game, ChessMove move)
+    protected void game_move_cb (ChessGame game, ChessMove move)
     {
         /* Need to save after each move */
         game_needs_saving = true;
@@ -870,7 +870,7 @@ public class Application : Gtk.Application
         update_control_buttons ();
     }
 
-    private void update_control_buttons ()
+    protected void update_control_buttons ()
     {
         var can_resign = game.n_moves > 0;
         resign_menu.sensitive = resign_button.sensitive = can_resign;
@@ -883,7 +883,7 @@ public class Application : Gtk.Application
         undo_menu.sensitive = undo_button.sensitive = can_undo;
     }
 
-    private void game_end_cb (ChessGame game)
+    protected void game_end_cb (ChessGame game)
     {
         string title = "";
         switch (game.result)
@@ -1061,7 +1061,7 @@ public class Application : Gtk.Application
     }
 
     [CCode (cname = "G_MODULE_EXPORT quit_cb", instance_pos = -1)]
-    public void quit_cb (Gtk.Widget widget)
+    public virtual void quit_cb (Gtk.Widget widget)
     {
         quit_game ();
     }
@@ -1086,7 +1086,7 @@ public class Application : Gtk.Application
         return false;
     }
 
-    private string make_clock_text (ChessClock? clock, Color color)
+    protected string make_clock_text (ChessClock? clock, Color color)
     {
         if (clock == null)
             return "∞";
