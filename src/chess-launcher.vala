@@ -25,6 +25,7 @@ public class ChessLauncher : Gtk.Window
 {
     private Gtk.Builder builder;
     private Settings settings;
+    private Settings settings_common;
     public signal void start_game ();
     public signal void load_game (File file, bool from_history);
 
@@ -81,7 +82,8 @@ public class ChessLauncher : Gtk.Window
     {
         this.history = history;
 
-        settings = new Settings ("org.gnome.gnome-chess.Settings");
+        settings = new Settings ("org.gnome.gnome-chess");
+        settings_common = new Settings ("org.gnome.gnome-chess.games-common");
         builder = new Gtk.Builder ();
         try
         {
@@ -207,7 +209,7 @@ public class ChessLauncher : Gtk.Window
             individual_view as Gtk.Widget);
         individual_view.set_live_search (search_widget);
 
-        /* Add filter for contacts capable of playing glchess */
+        /* Add filter for contacts capable of playing chess */
         individual_view.set_custom_filter ((model, iter, data)=>{
               return (data as GamesContacts.IndividualView).filter_default (
                   model, iter, GamesContacts.ActionType.PLAY_GLCHESS);
@@ -231,6 +233,7 @@ public class ChessLauncher : Gtk.Window
             save_duration_cb ();
 
         settings.sync ();
+        settings_common.sync ();
     }
 
     private bool launcher_configure_event_cb (Gtk.Widget widget,
@@ -345,7 +348,7 @@ public class ChessLauncher : Gtk.Window
         grid_preferences.hide ();
 
         /* Present settings */
-        string difficulty = settings.get_string ("difficulty");
+        string difficulty = settings_common.get_string ("difficulty");
         if (difficulty == "easy")
             radioaction_easy.activate ();
         else
@@ -354,13 +357,13 @@ public class ChessLauncher : Gtk.Window
             else
                 radioaction_difficult.activate ();
 
-        bool play_as_white = settings.get_boolean ("play-as-white");
+        bool play_as_white = settings_common.get_boolean ("play-as-white");
         if (play_as_white)
             radioaction_white.activate ();
         else
             radioaction_black.activate ();
 
-        set_duration (settings.get_int ("duration"));
+        set_duration (settings_common.get_int ("duration"));
     }
 
     private void show_robot_installation_choice (bool install)
@@ -403,7 +406,7 @@ public class ChessLauncher : Gtk.Window
                 string robot = null;
                 robot_list_model.get (iter, 0, &robot, -1);
 
-                if (settings.get_string ("opponent") == robot)
+                if (settings_common.get_string ("opponent") == robot)
                 {
                     var robot_selection = treeview_robots.get_selection ();
                     robot_selection.select_iter (iter);
@@ -411,7 +414,7 @@ public class ChessLauncher : Gtk.Window
                 break;
             }
 
-            if (settings.get_string ("opponent-type") == "robot")
+            if (settings_common.get_string ("opponent-type") == "robot")
             {
                 treeview_robots.sensitive = true;
                 done_button.label = _("_Done");
@@ -467,7 +470,7 @@ public class ChessLauncher : Gtk.Window
     {
         if (action == radioaction_opponent_robot)
         {
-            settings.set_string ("opponent-type", "robot");
+            settings_common.set_string ("opponent-type", "robot");
 
             show_robot_opponent_widgets (true);
             show_game_options ();
@@ -477,12 +480,12 @@ public class ChessLauncher : Gtk.Window
             show_robot_opponent_widgets (false);
             if (action == radioaction_opponent_local_player)
             {
-                settings.set_string ("opponent-type", "local-player");
+                settings_common.set_string ("opponent-type", "local-player");
                 show_game_options ();
             }
             else
             {
-                settings.set_string ("opponent-type", "remote-player");
+                settings_common.set_string ("opponent-type", "remote-player");
                 show_remote_player_selector ();
             }
         }
@@ -533,9 +536,9 @@ public class ChessLauncher : Gtk.Window
                     individual, GamesContacts.ActionType.PLAY_GLCHESS);
                 string opponent;
 
-                settings.set_string ("opponent", contact.id);
+                settings_common.set_string ("opponent", contact.id);
 
-                opponent = settings.get_string ("opponent");
+                opponent = settings_common.get_string ("opponent");
                 debug ("opponent selected: %s\n", opponent);
 
                 show_game_options ();
@@ -554,19 +557,19 @@ public class ChessLauncher : Gtk.Window
     {
         bool play_as_white = (action == radioaction_white) ? true : false;
 
-        settings.set_boolean ("play-as-white", play_as_white);
+        settings_common.set_boolean ("play-as-white", play_as_white);
     }
 
     [CCode (cname = "G_MODULE_EXPORT difficulty_changed_cb", instance_pos = -1)]
     public void difficulty_changed_cb (Gtk.Action action)
     {
         if (action == radioaction_easy)
-            settings.set_string ("difficulty", "easy");
+            settings_common.set_string ("difficulty", "easy");
         else
             if (action == radioaction_normal)
-                settings.set_string ("difficulty", "normal");
+                settings_common.set_string ("difficulty", "normal");
             else
-                settings.set_string ("difficulty", "hard");
+                settings_common.set_string ("difficulty", "hard");
     }
 
     private void ensure_legacy_channel_async ()
@@ -697,7 +700,7 @@ public class ChessLauncher : Gtk.Window
 
         string selected_robot_opponent = null;
         treeview_robots.model.get (iter, 0, &selected_robot_opponent);
-        settings.set_string ("opponent", selected_robot_opponent);
+        settings_common.set_string ("opponent", selected_robot_opponent);
 
         show_game_options ();
     }
@@ -771,7 +774,7 @@ public class ChessLauncher : Gtk.Window
 
     private bool save_duration_cb ()
     {
-        settings.set_int ("duration", get_duration ());
+        settings_common.set_int ("duration", get_duration ());
         Source.remove (save_duration_timeout);
         save_duration_timeout = 0;
         return false;

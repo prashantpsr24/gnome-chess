@@ -4,6 +4,7 @@ extern void gtk_file_filter_set_name (Gtk.FileFilter filter, string name);
 public class Application : Gtk.Application
 {
     protected Settings settings;
+    protected Settings settings_common;
     private History history;
     private Gtk.Builder builder;
     protected Gtk.Builder preferences_builder;
@@ -63,7 +64,8 @@ public class Application : Gtk.Application
     {
         base.startup ();
 
-        settings = new Settings ("org.gnome.gnome-chess.Settings");
+        settings = new Settings ("org.gnome.gnome-chess");
+        settings_common = new Settings ("org.gnome.gnome-chess.games-common");
 
         var data_dir = File.new_for_path (Path.build_filename (Environment.get_user_data_dir (), "gnome-chess", null));
         DirUtils.create_with_parents (data_dir.get_path (), 0755);
@@ -114,6 +116,7 @@ public class Application : Gtk.Application
             }
         }
 
+        settings_common.changed.connect (settings_changed_cb);
     }
 
     private ChessLauncher create_launcher (string engines_file,
@@ -154,8 +157,8 @@ public class Application : Gtk.Application
 
         white_time_label = (Gtk.Widget) builder.get_object ("white_time_label");
         black_time_label = (Gtk.Widget) builder.get_object ("black_time_label");
-        settings.bind ("show-toolbar", builder.get_object ("toolbar"), "visible", SettingsBindFlags.DEFAULT);
-        settings.bind ("show-history", builder.get_object ("navigation_box"), "visible", SettingsBindFlags.DEFAULT);
+        settings_common.bind ("show-toolbar", builder.get_object ("toolbar"), "visible", SettingsBindFlags.DEFAULT);
+        settings_common.bind ("show-history", builder.get_object ("navigation_box"), "visible", SettingsBindFlags.DEFAULT);
         var view_box = (Gtk.VBox) builder.get_object ("view_box");
         view_container = (Gtk.Container) builder.get_object ("view_container");
 
@@ -180,14 +183,14 @@ public class Application : Gtk.Application
         scene.is_human.connect ((p) => { return p == human_player; } );
         scene.changed.connect (scene_changed_cb);
         scene.choose_promotion_type.connect (show_promotion_type_selector);
-        settings.bind ("show-move-hints", scene, "show-move-hints", SettingsBindFlags.GET);
-        settings.bind ("show-numbering", scene, "show-numbering", SettingsBindFlags.GET);
-        settings.bind ("piece-theme", scene, "theme-name", SettingsBindFlags.GET);
-        settings.bind ("show-3d-smooth", scene, "show-3d-smooth", SettingsBindFlags.GET);
-        settings.bind ("move-format", scene, "move-format", SettingsBindFlags.GET);
-        settings.bind ("board-side", scene, "board-side", SettingsBindFlags.GET);
+        settings_common.bind ("show-move-hints", scene, "show-move-hints", SettingsBindFlags.GET);
+        settings_common.bind ("show-numbering", scene, "show-numbering", SettingsBindFlags.GET);
+        settings_common.bind ("piece-theme", scene, "theme-name", SettingsBindFlags.GET);
+        settings_common.bind ("show-3d-smooth", scene, "show-3d-smooth", SettingsBindFlags.GET);
+        settings_common.bind ("move-format", scene, "move-format", SettingsBindFlags.GET);
+        settings_common.bind ("board-side", scene, "board-side", SettingsBindFlags.GET);
 
-        settings_changed_cb (settings, "show-3d");
+        settings_changed_cb (settings_common, "show-3d");
     }
 
     protected override void shutdown ()
@@ -290,6 +293,7 @@ public class Application : Gtk.Application
     {
         autosave ();
         settings.sync ();
+        settings_common.sync ();
         if (launcher != null)
         {
           launcher.destroy ();
@@ -331,7 +335,7 @@ public class Application : Gtk.Application
         }
     }
 
-    protected void settings_changed_cb (Settings settings, string key)
+    protected void settings_changed_cb (Settings settings_common, string key)
     {
         if (key == "show-3d")
         {
@@ -340,7 +344,7 @@ public class Application : Gtk.Application
                 view_container.remove (view);
                 view.destroy ();
             }
-            if (settings.get_boolean ("show-3d"))
+            if (settings_common.get_boolean ("show-3d"))
                 view = new ChessView3D ();
             else
                 view = new ChessView2D ();
@@ -1199,27 +1203,27 @@ public class Application : Gtk.Application
         }
         preferences_dialog = (Gtk.Dialog) preferences_builder.get_object ("preferences");
 
-        settings.bind ("show-numbering", preferences_builder.get_object ("show_numbering_check"),
+        settings_common.bind ("show-numbering", preferences_builder.get_object ("show_numbering_check"),
                        "active", SettingsBindFlags.DEFAULT);
-        settings.bind ("show-move-hints", preferences_builder.get_object ("show_move_hints_check"),
+        settings_common.bind ("show-move-hints", preferences_builder.get_object ("show_move_hints_check"),
                        "active", SettingsBindFlags.DEFAULT);
-        settings.bind ("show-toolbar", preferences_builder.get_object ("show_toolbar_check"),
+        settings_common.bind ("show-toolbar", preferences_builder.get_object ("show_toolbar_check"),
                        "active", SettingsBindFlags.DEFAULT);
-        settings.bind ("show-history", preferences_builder.get_object ("show_history_check"),
+        settings_common.bind ("show-history", preferences_builder.get_object ("show_history_check"),
                        "active", SettingsBindFlags.DEFAULT);
-        settings.bind ("show-3d", preferences_builder.get_object ("show_3d_check"),
+        settings_common.bind ("show-3d", preferences_builder.get_object ("show_3d_check"),
                        "active", SettingsBindFlags.DEFAULT);
-        settings.bind ("show-3d-smooth", preferences_builder.get_object ("show_3d_smooth_check"),
+        settings_common.bind ("show-3d-smooth", preferences_builder.get_object ("show_3d_smooth_check"),
                        "active", SettingsBindFlags.DEFAULT);
 
         var orientation_combo = (Gtk.ComboBox) preferences_builder.get_object ("orientation_combo");
-        set_combo (orientation_combo, 1, settings.get_string ("board-side"));
+        set_combo (orientation_combo, 1, settings_common.get_string ("board-side"));
 
         var move_combo = (Gtk.ComboBox) preferences_builder.get_object ("move_format_combo");
-        set_combo (move_combo, 1, settings.get_string ("move-format"));
+        set_combo (move_combo, 1, settings_common.get_string ("move-format"));
 
         var theme_combo = (Gtk.ComboBox) preferences_builder.get_object ("piece_style_combo");
-        set_combo (theme_combo, 1, settings.get_string ("piece-theme"));
+        set_combo (theme_combo, 1, settings_common.get_string ("piece-theme"));
 
         preferences_builder.connect_signals (this);
 
@@ -1270,7 +1274,7 @@ public class Application : Gtk.Application
     [CCode (cname = "G_MODULE_EXPORT piece_style_combo_changed_cb", instance_pos = -1)]
     public void piece_style_combo_changed_cb (Gtk.ComboBox combo)
     {
-        settings.set_string ("piece-theme", get_combo (combo, 1));
+        settings_common.set_string ("piece-theme", get_combo (combo, 1));
     }
 
     [CCode (cname = "G_MODULE_EXPORT show_3d_toggle_cb", instance_pos = -1)]
@@ -1286,13 +1290,13 @@ public class Application : Gtk.Application
     [CCode (cname = "G_MODULE_EXPORT move_format_combo_changed_cb", instance_pos = -1)]
     public void move_format_combo_changed_cb (Gtk.ComboBox combo)
     {
-        settings.set_string ("move-format", get_combo (combo, 1));
+        settings_common.set_string ("move-format", get_combo (combo, 1));
     }
 
     [CCode (cname = "G_MODULE_EXPORT orientation_combo_changed_cb", instance_pos = -1)]
     public void orientation_combo_changed_cb (Gtk.ComboBox combo)
     {
-        settings.set_string ("board-side", get_combo (combo, 1));    
+        settings_common.set_string ("board-side", get_combo (combo, 1));    
     }
 
     [CCode (cname = "G_MODULE_EXPORT help_cb", instance_pos = -1)]
@@ -1525,13 +1529,13 @@ public class Application : Gtk.Application
 
     private void start_new_game ()
     {
-        string opponent_type = settings.get_string ("opponent-type");
+        string opponent_type = settings_common.get_string ("opponent-type");
         if (opponent_type == "remote-player")
         {
-            string contact_id = settings.get_string ("opponent");
+            string contact_id = settings_common.get_string ("opponent");
             debug ("Opponent type selected: %s", opponent_type);
             debug ("Contact-id: %s", contact_id);
-            debug ("Requested a glchess channel to %s. glchess-channel-handler takes charge. Now quitting", contact_id);
+            debug ("Requested a chess channel to %s. gnome-chess-channel-handler takes charge. Now quitting", contact_id);
             quit_game ();
         }
 
@@ -1551,17 +1555,17 @@ public class Application : Gtk.Application
             var now = new DateTime.now_local ();
             pgn_game.date = now.format ("%Y.%m.%d");
             pgn_game.time = now.format ("%H:%M:%S");
-            var duration = settings.get_int ("duration");
+            var duration = settings_common.get_int ("duration");
             if (duration > 0)
                 pgn_game.time_control = "%d".printf (duration);
 
-            if (settings.get_string ("opponent-type") == "robot")
+            if (settings_common.get_string ("opponent-type") == "robot")
             {
-                var engine_name = settings.get_string ("opponent");
-                var engine_level = settings.get_string ("difficulty");
+                var engine_name = settings_common.get_string ("opponent");
+                var engine_level = settings_common.get_string ("difficulty");
                 if (engine_name != null)
                 {
-                    if (settings.get_boolean ("play-as-white"))
+                    if (settings_common.get_boolean ("play-as-white"))
                     {
                         pgn_game.tags.insert ("BlackAI", engine_name);
                         pgn_game.tags.insert ("BlackLevel", engine_level);

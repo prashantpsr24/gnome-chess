@@ -50,7 +50,8 @@ public class HandlerApplication : Application
             application_id: TelepathyGLib.CLIENT_BUS_NAME_BASE + "Gnome.Chess",
             flags: ApplicationFlags.FLAGS_NONE);
 
-        settings = new Settings ("org.gnome.gnome-chess.Settings");
+        settings = new Settings ("org.gnome.gnome-chess");
+        settings_common = new Settings ("org.gnome.gnome-chess.games-common");
 
         builder = new Gtk.Builder ();
         try
@@ -63,11 +64,19 @@ public class HandlerApplication : Application
             warning ("Could not load UI: %s", e.message);
         }
 
-        settings.changed.connect (settings_changed_cb);
+        settings_common.changed.connect (settings_changed_cb);
 
         create_handler_window ();
         /* Associate the window to this application */
         handler_window.application = this;
+
+        if (settings.get_boolean ("network-window-fullscreen"))
+            handler_window.fullscreen ();
+        else if (settings.get_boolean ("network-window-maximized"))
+            handler_window.maximize ();
+
+        handler_window.resize (settings.get_int ("network-window-width"),
+            settings.get_int ("network-window-height"));
 
         handler_window.show_all ();
     }
@@ -167,6 +176,7 @@ public class HandlerApplication : Application
     public new void quit_game ()
     {
         settings.sync ();
+        settings_common.sync ();
     }
 
     public override void activate ()
@@ -175,6 +185,39 @@ public class HandlerApplication : Application
       handler_window.show_all ();
       handler_window.present ();
     }
+
+    [CCode (cname = "G_MODULE_EXPORT network_window_configure_event_cb", instance_pos = -1)]
+    public bool network_window_configure_event_cb (Gtk.Widget widget, Gdk.EventConfigure event)
+    {
+        if (!settings.get_boolean ("network-window-maximized") &&
+            !settings.get_boolean ("network-window-fullscreen"))
+        {
+            settings.set_int ("network-window-width", event.width);
+            settings.set_int ("network-window-height", event.height);
+        }
+
+        return false;
+    }
+
+    [CCode (cname = "G_MODULE_EXPORT network_window_window_state_event_cb", instance_pos = -1)]
+    public bool network_window_window_state_event_cb (Gtk.Widget widget, Gdk.EventWindowState event)
+    {
+        if ((event.changed_mask & Gdk.WindowState.MAXIMIZED) != 0)
+        {
+            var is_maximized = (event.new_window_state & Gdk.WindowState.MAXIMIZED) != 0;
+            settings.set_boolean ("network-window-maximized", is_maximized);
+        }
+        if ((event.changed_mask & Gdk.WindowState.FULLSCREEN) != 0)
+        {
+            bool is_fullscreen = (event.new_window_state & Gdk.WindowState.FULLSCREEN) != 0;
+            settings.set_boolean ("network-window-fullscreen", is_fullscreen);
+            fullscreen_menu.label = is_fullscreen ? Gtk.Stock.LEAVE_FULLSCREEN : Gtk.Stock.FULLSCREEN;
+        }
+
+        return false;
+    }
+
+
 
     [CCode (cname = "G_MODULE_EXPORT new_game_cb", instance_pos = -1)]
     private new void new_game_cb (Gtk.Widget widget)

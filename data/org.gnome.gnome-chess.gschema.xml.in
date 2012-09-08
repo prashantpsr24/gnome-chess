@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <schemalist>
   <enum id="org.gnome.gnome-chess.PieceType">
     <value value="0" nick="pawn"/>
@@ -30,136 +30,166 @@
     <value value="2" nick="hard"/>
   </enum>
 
-  <schema id="org.gnome.gnome-chess.Settings" path="/org/gnome/gnome-chess/" gettext-domain="gnome-games">
-    <key name="welcome-screen-width" type="i">
-      <default>600</default>
-      <_summary>The width of welcome screen</_summary>
-      <_description>The width of welcome screen in pixels.</_description>
+  <schema path="/org/gnome/gnome-chess/" id="org.gnome.gnome-chess" gettext-domain="gnome-chess">
+    <key type="b" name="advertise-capability">
+    <default>false</default>
+    <summary>Advertise chess playing capability to online contacts</summary>
+    <description>Advertise chess playing capability to your online contacts.
+                 You'll be able to accept incoming gaming requests whenever you get online.</description>
     </key>
-    <key name="welcome-screen-height" type="i">
+    <key type="i" name="welcome-screen-width">
+      <default>600</default>
+      <summary>The width of welcome screen</summary>
+      <description>The width of welcome screen in pixels.</description>
+    </key>
+    <key type="i" name="welcome-screen-height">
       <default>300</default>
-      <_summary>The height of the welcome screen</_summary>
-      <_description>The height of the welcome screen in pixels.</_description>
+      <summary>The height of the welcome screen</summary>
+      <description>The height of the welcome screen in pixels.</description>
     </key>
-    <key name="remote-player-selector-width" type="i">
+    <key type="i" name="remote-player-selector-width">
       <default>600</default>
-      <_summary>The width of the welcome screen</_summary>
-      <_description>The width of the welcome screen in pixels.</_description>
+      <summary>The width of the welcome screen</summary>
+      <description>The width of the welcome screen in pixels.</description>
     </key>
-    <key name="remote-player-selector-height" type="i">
+    <key type="i" name="remote-player-selector-height">
       <default>400</default>
-      <_summary>The height of remote player selector screen</_summary>
-      <_description>The height of remote player selector screen in pixels.</_description>
+      <summary>The height of remote player selector screen</summary>
+      <description>The height of remote player selector screen in pixels.</description>
     </key>
-    <key name="preferences-screen-width" type="i">
+    <key type="i" name="preferences-screen-width">
       <default>600</default>
-      <_summary>The width of preferences screen</_summary>
-      <_description>The width of preferences screen in pixels.</_description>
+      <summary>The width of preferences screen</summary>
+      <description>The width of preferences screen in pixels.</description>
     </key>
-    <key name="preferences-screen-height" type="i">
+    <key type="i" name="preferences-screen-height">
       <default>300</default>
-      <_summary>The height of preferences screen</_summary>
-      <_description>The height of preferences screen in pixels.</_description>
+      <summary>The height of preferences screen</summary>
+      <description>The height of preferences screen in pixels.</description>
     </key>
-    <key name="game-screen-width" type="i">
+    <key type="i" name="game-screen-width">
       <default>500</default>
-      <_summary>The width of the window</_summary>
-      <_description>The width of the main window in pixels.</_description>
+      <summary>The width of window for gaming with a local player or a robot</summary>
+      <description>The width of window for gaming with a local player or a robot.</description>
     </key>
-    <key name="game-screen-height" type="i">
+    <key type="i" name="game-screen-height">
       <default>550</default>
-      <_summary>The height of the window</_summary>
-      <_description>The height of the main window in pixels.</_description>
+      <summary>The height of the window</summary>
+      <description>The height of the main window in pixels.</description>
     </key>
-    <key name="maximized" type="b">
+    <key type="b" name="maximized">
       <default>false</default>
-      <_summary>A flag to enable maximized mode</_summary>
-      <_description>A flag to enable maximized mode</_description>
+      <summary>A flag to enable maximized mode</summary>
+      <description>A flag to enable maximized mode</description>
     </key>
-    <key name="fullscreen" type="b">
+    <key type="b" name="fullscreen">
       <default>false</default>
-      <_summary>A flag to enable fullscreen mode</_summary>
-      <_description>A flag to enable fullscreen mode</_description>
+      <summary>A flag to enable fullscreen mode</summary>
+      <description>A flag to enable fullscreen mode</description>
     </key>
-    <key name="show-3d" type="b">
+    <key type="i" name="network-window-width">
+      <default>500</default>
+      <summary>The width of window for gaming with a local player or a robot</summary>
+      <description>The width of window for gaming with a local player or a robot.</description>
+    </key>
+    <key type="i" name="network-window-height">
+      <default>550</default>
+      <summary>The height of the window</summary>
+      <description>The height of the main window in pixels.</description>
+    </key>
+    <key type="b" name="network-window-maximized">
       <default>false</default>
-      <_summary>A flag to enable 3D mode</_summary>
-      <_description>A flag to enable 3D mode</_description>
+      <summary>A flag to enable maximized mode of channel-handler</summary>
+      <description>A flag to enable maximized mode of channel-handler</description>
     </key>
-    <key name="show-3d-smooth" type="b">
+    <key type="b" name="network-window-fullscreen">
       <default>false</default>
-      <_summary>A flag to smooth (anti-alias) the 3D display</_summary>
-      <_description>A flag to smooth (anti-alias) the 3D display</_description>
+      <summary>A flag to enable fullscreen mode of channel-handler</summary>
+      <description>A flag to enable fullscreen mode of channel-handler</description>
     </key>
-    <key name="piece-theme" type="s">
-      <default>'simple'</default>
-      <_summary>The piece theme to use</_summary>
-      <_description>The piece theme to use</_description>
-    </key>
-    <key name="show-move-hints" type="b">
-      <default>true</default>
-      <_summary>A flag to enable move hints</_summary>
-      <_description>A flag to enable move hints</_description>
-    </key>
-    <key name="show-numbering" type="b">
-      <default>false</default>
-      <_summary>A flag to enable board numbering</_summary>
-      <_description>A flag to enable board numbering</_description>
-    </key>
-    <key name="show-history" type="b">
-      <default>true</default>
-      <_summary>A flag to enable the move history browser</_summary>
-      <_description>A flag to enable the move history browser</_description>
-    </key>
-    <key name="show-toolbar" type="b">
-      <default>false</default>
-      <_summary>A flag to enable the toolbar</_summary>
-      <_description>A flag to enable the toolbar</_description>
-    </key>
-    <key name="save-directory" type="s">
-      <default>''</default>
-      <_summary>The directory to open the save game dialog in</_summary>
-      <_description>The directory to open the save game dialog in</_description>
-    </key>
-    <key name="load-directory" type="s">
-      <default>''</default>
-      <_summary>The directory to open the load game dialog in</_summary>
-      <_description>The directory to open the load game dialog in</_description>
-    </key>
-    <key name="move-format" enum="org.gnome.gnome-chess.MoveFormat">
-      <default>'human'</default>
-      <_summary>The format to display moves in</_summary>
-      <_description>The format to display moves in</_description>
-    </key>
-    <key name="board-side" enum="org.gnome.gnome-chess.BoardSide">
-      <default>'human'</default>
-      <_summary>The side of the board that is in the foreground</_summary>
-      <_description>The side of the board that is in the foreground</_description>
-    </key>
-    <key name="duration" type="i">
+    <child name="games-common" schema="org.gnome.gnome-chess.games-common"/>
+  </schema>
+
+  <schema path="/org/gnome/gnome-chess/games-common/" id="org.gnome.gnome-chess.games-common" gettext-domain="gnome-chess">
+    <key type="i" name="duration">
       <default>0</default>
-      <_summary>The duration of a game in seconds (0 for no limit)</_summary>
-      <_description>The duration of a game in seconds (0 for no limit)</_description>
+      <summary>The duration of a game in seconds (0 for no limit)</summary>
+      <description>The duration of a game in seconds (0 for no limit)</description>
     </key>
-    <key name="play-as-white" type="b">
+    <key type="b" name="play-as-white">
       <default>true</default>
-      <_summary>true if the human player is playing white</_summary>
-      <_description>true if the human player is playing white</_description>
+      <summary>true if the human player is playing white</summary>
+      <description>true if the human player is playing white</description>
     </key>
-    <key name="opponent-type" type="s">
+    <key type="s" name="opponent-type">
       <default>'robot'</default>
-      <_summary>The kind of opponent player</_summary>
-      <_description>Can be 'robot' to play against a chess engine, 'local-player' to play against a local player or 'remote-player' to play against a remote contact</_description>
+      <summary>The kind of opponent player</summary>
+      <description>Can be 'robot' to play against a chess engine, 'local-player' to play against a local player or 'remote-player' to play against a remote contact</description>
     </key>
-    <key name="opponent" type="s">
+    <key type="s" name="opponent">
       <default>''</default>
-      <_summary>The opponent player</_summary>
-      <_description>Can be 'human' (play against another human player), '' (use the first available chess engine), the name of a specific engine to play against or a string uniquely identifying a remote player</_description>
+      <summary>The opponent player</summary>
+      <description>Can be 'human' (play against another human player), '' (use the first available chess engine), the name of a specific engine to play against or a string uniquely identifying a remote player</description>
     </key>
     <key name="difficulty" enum="org.gnome.gnome-chess.Difficulty">
       <default>'easy'</default>
-      <_summary>Difficulty of the opponent chess engine</_summary>
-      <_description>Difficulty of the opponent chess engine</_description>
+      <summary>Difficulty of the opponent chess engine</summary>
+      <description>Difficulty of the opponent chess engine</description>
+    </key>
+    <key type="b" name="show-3d">
+      <default>false</default>
+      <summary>A flag to enable 3D mode</summary>
+      <description>A flag to enable 3D mode</description>
+    </key>
+    <key type="b" name="show-3d-smooth">
+      <default>false</default>
+      <summary>A flag to smooth (anti-alias) the 3D display</summary>
+      <description>A flag to smooth (anti-alias) the 3D display</description>
+    </key>
+    <key type="s" name="piece-theme">
+      <default>'simple'</default>
+      <summary>The piece theme to use</summary>
+      <description>The piece theme to use</description>
+    </key>
+    <key type="b" name="show-move-hints">
+      <default>true</default>
+      <summary>A flag to enable move hints</summary>
+      <description>A flag to enable move hints</description>
+    </key>
+    <key type="b" name="show-numbering">
+      <default>false</default>
+      <summary>A flag to enable board numbering</summary>
+      <description>A flag to enable board numbering</description>
+    </key>
+    <key type="b" name="show-history">
+      <default>true</default>
+      <summary>A flag to enable the move history browser</summary>
+      <description>A flag to enable the move history browser</description>
+    </key>
+    <key type="b" name="show-toolbar">
+      <default>false</default>
+      <summary>A flag to enable the toolbar</summary>
+      <description>A flag to enable the toolbar</description>
+    </key>
+    <key type="s" name="save-directory">
+      <default>''</default>
+      <summary>The directory to open the save game dialog in</summary>
+      <description>The directory to open the save game dialog in</description>
+    </key>
+    <key type="s" name="load-directory">
+      <default>''</default>
+      <summary>The directory to open the load game dialog in</summary>
+      <description>The directory to open the load game dialog in</description>
+    </key>
+    <key name="move-format" enum="org.gnome.gnome-chess.MoveFormat">
+      <default>'human'</default>
+      <summary>The format to display moves in</summary>
+      <description>The format to display moves in</description>
+    </key>
+    <key name="board-side" enum="org.gnome.gnome-chess.BoardSide">
+      <default>'human'</default>
+      <summary>The side of the board that is in the foreground</summary>
+      <description>The side of the board that is in the foreground</description>
     </key>
   </schema>
 </schemalist>
