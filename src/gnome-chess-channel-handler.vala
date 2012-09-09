@@ -50,6 +50,8 @@ public class HandlerApplication : Application
             application_id: TelepathyGLib.CLIENT_BUS_NAME_BASE + "Gnome.Chess",
             flags: ApplicationFlags.FLAGS_NONE);
 
+        chess_networking_init ();
+
         settings = new Settings ("org.gnome.gnome-chess");
         settings_common = new Settings ("org.gnome.gnome-chess.games-common");
 

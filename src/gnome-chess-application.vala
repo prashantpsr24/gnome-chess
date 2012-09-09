@@ -90,6 +90,8 @@ public class Application : Gtk.Application
         foreach (var profile in ai_profiles)
             message ("Detected AI profile %s in %s", profile.name, profile.path);
 
+        chess_networking_init ();
+
         if (game_file == null)
         {
             launcher = create_launcher (engines_file, ai_profiles, history);
@@ -117,6 +119,24 @@ public class Application : Gtk.Application
         }
 
         settings_common.changed.connect (settings_changed_cb);
+    }
+
+    public void chess_networking_init ()
+    {
+      TelepathyGLib.SimpleClientFactory factory;
+      TelepathyGLib.AccountManager am;
+
+      if (Config.ENABLE_NETWORKING)
+      {
+        /* Prepare account-manager from TpAutomaticClientFactory if networking
+         * is enabled. Set it as default so that folks uses it.  */
+
+         factory = new TelepathyGLib.AutomaticClientFactory (null);
+
+         /* Features are prepared by folks so we don't need to prepare them */
+         am = new TelepathyGLib.AccountManager.with_factory (factory);
+         am.set_default ();
+      }
     }
 
     private ChessLauncher create_launcher (string engines_file,
