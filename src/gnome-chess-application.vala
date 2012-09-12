@@ -95,6 +95,7 @@ public class Application : Gtk.Application
         if (game_file == null)
         {
             launcher = create_launcher (engines_file, ai_profiles, history);
+            add_window (launcher);
 
             var unfinished = history.get_unfinished ();
             if (unfinished != null)
@@ -1054,7 +1055,10 @@ public class Application : Gtk.Application
         /* Hide game-window and show launcher */
         window.hide ();
         if (launcher == null)
+        {
           launcher = create_launcher (engines_file, ai_profiles, history);
+          add_window (launcher);
+        }
         launcher.present ();
         launcher.show_opponent_selector ();
     }
