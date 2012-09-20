@@ -458,6 +458,10 @@ public class Application : Gtk.Application
                 warning ("Chess game has SetUp tag but no FEN tag");
         }
         game = new ChessGame (fen, moves);
+        game.set_data<PGNGame> ("pgn-game", pgn_game);
+        game.set_data<Gtk.InfoBar> ("info-bar", info_bar);
+        game.set_data<Gtk.Label> ("info-title-label", info_title_label);
+        game.set_data<Gtk.Label> ("info-label", info_label);
 
         if (pgn_game.time_control != null)
         {
@@ -912,6 +916,11 @@ public class Application : Gtk.Application
 
     protected void game_end_cb (ChessGame game)
     {
+        PGNGame pgn_game = game.get_data<PGNGame> ("pgn-game");
+        Gtk.InfoBar info_bar = game.get_data<Gtk.InfoBar> ("info-bar");
+        Gtk.Label info_title_label = game.get_data<Gtk.Label> ("info-title-bar");
+        Gtk.Label info_label = game.get_data<Gtk.Label> ("info-label");
+
         string title = "";
         switch (game.result)
         {
