@@ -399,7 +399,7 @@ public class Application : Gtk.Application
             {
                 Gtk.TreeIter iter;
                 if (history_combo.model.iter_nth_child (out iter, null, i))
-                    set_move_text (iter, state.last_move);
+                    set_move_text (iter, state.last_move, scene, history_combo.model);
             }
             i--;
         }
@@ -645,7 +645,7 @@ public class Application : Gtk.Application
             opponent_engine.request_move ();
     }
 
-    protected void set_move_text (Gtk.TreeIter iter, ChessMove move)
+    protected void set_move_text (Gtk.TreeIter iter, ChessMove move, ChessScene scene, Gtk.TreeModel model)
     {
         /* Note there are no move formats for pieces taking kings and this is not allowed in Chess rules */
         const string human_descriptions[] = {/* Human Move String: Description of a white pawn moving from %1$s to %2s, e.g. 'c2 to c4' */
@@ -827,9 +827,8 @@ public class Application : Gtk.Application
             break;
         }
 
-        var model = (Gtk.ListStore) history_combo.model;
         var label = "%u%c. %s".printf ((move.number + 1) / 2, move.number % 2 == 0 ? 'b' : 'a', move_text);
-        model.set (iter, 0, label, -1);
+        (model as Gtk.ListStore).set (iter, 0, label, -1);
     }
 
     protected void game_move_cb (ChessGame game, ChessMove move)
@@ -848,7 +847,7 @@ public class Application : Gtk.Application
         Gtk.TreeIter iter;
         model.append (out iter);
         model.set (iter, 1, move.number, -1);        
-        set_move_text (iter, move);
+        set_move_text (iter, move, scene, history_combo.model);
 
         /* Follow the latest move */
         if (move.number == game.n_moves && scene.move_number == -1)
