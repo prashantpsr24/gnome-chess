@@ -376,7 +376,7 @@ public class Application : Gtk.Application
         }
     }
 
-    protected void update_history_panel ()
+    protected void update_history_panel (ChessGame? game, ChessScene scene, Gtk.TreeModel history_model)
     {
         if (game == null)
             return;
@@ -398,8 +398,8 @@ public class Application : Gtk.Application
             if (state.last_move != null)
             {
                 Gtk.TreeIter iter;
-                if (history_combo.model.iter_nth_child (out iter, null, i))
-                    set_move_text (iter, state.last_move, scene, history_combo.model);
+                if ((history_model as Gtk.ListStore).iter_nth_child (out iter, null, i))
+                    set_move_text (iter, state.last_move, scene, history_model);
             }
             i--;
         }
@@ -409,7 +409,7 @@ public class Application : Gtk.Application
 
     protected void scene_changed_cb (ChessScene scene)
     {
-        update_history_panel ();
+        update_history_panel (game, scene, history_combo.model);
     }
 
     private void start_game ()
@@ -476,7 +476,7 @@ public class Application : Gtk.Application
         info_bar.hide ();
         save_menu.sensitive = false;
         save_as_menu.sensitive = false;
-        update_history_panel ();
+        update_history_panel (game, scene, history_combo.model);
         update_control_buttons ();
 
         // TODO: Could both be engines
@@ -855,7 +855,7 @@ public class Application : Gtk.Application
 
         save_menu.sensitive = true;
         save_as_menu.sensitive = true;
-        update_history_panel ();
+        update_history_panel (game, scene, history_combo.model);
         update_control_buttons ();
 
         if (opponent_engine != null)
@@ -886,7 +886,7 @@ public class Application : Gtk.Application
             view.queue_draw ();
         }
 
-        update_history_panel ();
+        update_history_panel (game, scene, history_combo.model);
         update_control_buttons ();
     }
 
