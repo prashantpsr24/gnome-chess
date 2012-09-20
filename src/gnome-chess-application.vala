@@ -376,6 +376,24 @@ public class Application : Gtk.Application
         }
     }
 
+    protected void update_history_model (ChessGame game, ChessScene scene, Gtk.TreeModel history_model)
+    {
+        /* Set move text for all moves (it may have changed format) */
+        var n_moves = (int) game.n_moves;
+
+        int i = n_moves;
+        foreach (var state in game.move_stack)
+        {
+            if (state.last_move != null)
+            {
+                Gtk.TreeIter iter;
+                if ((history_model as Gtk.ListStore).iter_nth_child (out iter, null, i))
+                    set_move_text (iter, state.last_move, scene, history_model);
+            }
+            i--;
+        }
+    }
+
     protected void update_history_panel (ChessGame? game, ChessScene scene, Gtk.TreeModel history_model)
     {
         if (game == null)
@@ -391,18 +409,7 @@ public class Application : Gtk.Application
         next_move_button.sensitive = move_number < n_moves;
         last_move_button.sensitive = n_moves > 0 && move_number != n_moves;
 
-        /* Set move text for all moves (it may have changed format) */
-        int i = n_moves;
-        foreach (var state in game.move_stack)
-        {
-            if (state.last_move != null)
-            {
-                Gtk.TreeIter iter;
-                if ((history_model as Gtk.ListStore).iter_nth_child (out iter, null, i))
-                    set_move_text (iter, state.last_move, scene, history_model);
-            }
-            i--;
-        }
+        update_history_model (game, scene, history_model);
 
         history_combo.set_active (move_number);
     }
