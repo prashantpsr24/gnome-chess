@@ -202,7 +202,6 @@ public class Application : Gtk.Application
 
         scene = new ChessScene ();
         scene.is_human.connect ((p) => { return p == human_player; } );
-        scene.changed.connect (scene_changed_cb);
         scene.choose_promotion_type.connect (show_promotion_type_selector);
         settings_common.bind ("show-move-hints", scene, "show-move-hints", SettingsBindFlags.GET);
         settings_common.bind ("show-numbering", scene, "show-numbering", SettingsBindFlags.GET);
@@ -416,7 +415,9 @@ public class Application : Gtk.Application
 
     protected void scene_changed_cb (ChessScene scene)
     {
-        update_history_panel (game, scene, history_combo.model);
+        ChessGame game = scene.game;
+        Gtk.TreeModel history_model = game.get_data<Gtk.TreeModel> ("history-model");
+        update_history_panel (game, scene, history_model);
     }
 
     private void start_game ()
@@ -462,6 +463,8 @@ public class Application : Gtk.Application
         game.set_data<Gtk.InfoBar> ("info-bar", info_bar);
         game.set_data<Gtk.Label> ("info-title-label", info_title_label);
         game.set_data<Gtk.Label> ("info-label", info_label);
+        /* Associate history_model for access in scene_changed_cb */
+        game.set_data<Gtk.TreeModel> ("history-model", history_combo.model);
 
         if (pgn_game.time_control != null)
         {
@@ -484,6 +487,8 @@ public class Application : Gtk.Application
             game.clock.tick.connect (game_clock_tick_cb);
 
         scene.game = game;
+        /* scene_changed_cb makes use of game and history-model association on it so make sure that is set before connecting this to it's signal */
+        scene.changed.connect (scene_changed_cb);
         info_bar.hide ();
         save_menu.sensitive = false;
         save_as_menu.sensitive = false;
