@@ -177,8 +177,7 @@ public class HandlerApplication : Application
     /* Quits the application */
     public new void quit_game ()
     {
-        settings.sync ();
-        settings_common.sync ();
+        Settings.sync ();
     }
 
     public override void activate ()

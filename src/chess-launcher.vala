@@ -232,8 +232,7 @@ public class ChessLauncher : Gtk.Window
         if (save_duration_timeout != 0)
             save_duration_cb ();
 
-        settings.sync ();
-        settings_common.sync ();
+        Settings.sync ();
     }
 
     private bool launcher_configure_event_cb (Gtk.Widget widget,

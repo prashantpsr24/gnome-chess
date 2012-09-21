@@ -312,8 +312,7 @@ public class Application : Gtk.Application
     private void quit_game ()
     {
         autosave ();
-        settings.sync ();
-        settings_common.sync ();
+        Settings.sync ();
         if (launcher != null)
         {
           launcher.destroy ();
