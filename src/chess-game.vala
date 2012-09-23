@@ -1196,7 +1196,7 @@ public enum ChessRule
     DEATH
 }
 
-public class ChessGame
+public class ChessGame : Object
 {
     public bool is_started;
     public ChessResult result;
