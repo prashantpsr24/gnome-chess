@@ -118,8 +118,8 @@
     </key>
     <key type="b" name="play-as-white">
       <default>true</default>
-      <summary>true if the human player is playing white</summary>
-      <description>true if the human player is playing white</description>
+      <summary>true if the human player/channel offerer is playing white</summary>
+      <description>true if the human player/channel offerer is playing white</description>
     </key>
     <key type="s" name="opponent-type">
       <default>'robot'</default>
