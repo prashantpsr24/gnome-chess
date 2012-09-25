@@ -129,7 +129,12 @@
     <key type="s" name="opponent">
       <default>''</default>
       <summary>The opponent player</summary>
-      <description>Can be 'human' (play against another human player), '' (use the first available chess engine), the name of a specific engine to play against or a string uniquely identifying a remote player</description>
+      <description>Can be 'human' (play against another human player), '' (use the first available chess engine) or the name of a specific engine to play against</description>
+    </key>
+    <key type="s" name="remote-opponent">
+      <default>''</default>
+      <summary>Remote player identifier</summary>
+      <description>A string uniquely identifying a remote player that is the contact's identifier in the underlying instant messaging protocol (e.g. XMPP JID) or '' when unset</description>
     </key>
     <key name="difficulty" enum="org.gnome.gnome-chess.Difficulty">
       <default>'easy'</default>

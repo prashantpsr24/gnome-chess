@@ -533,12 +533,13 @@ public class ChessLauncher : Gtk.Window
             {
                 contact = GamesContacts.Contact.dup_best_for_action (
                     individual, GamesContacts.ActionType.PLAY_GLCHESS);
-                string opponent;
+                string remote_opponent;
 
-                settings_common.set_string ("opponent", contact.id);
+                settings_common.set_string ("remote-opponent", contact.id);
 
-                opponent = settings_common.get_string ("opponent");
-                debug ("opponent selected: %s\n", opponent);
+                /* cross-check */
+                remote_opponent = settings_common.get_string ("remote-opponent");
+                debug ("remote-opponent selected: %s\n", remote_opponent);
 
                 show_game_options ();
             }

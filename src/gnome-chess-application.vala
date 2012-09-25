@@ -1575,7 +1575,7 @@ public class Application : Gtk.Application
         string opponent_type = settings_common.get_string ("opponent-type");
         if (opponent_type == "remote-player")
         {
-            string contact_id = settings_common.get_string ("opponent");
+            string contact_id = settings_common.get_string ("remote-opponent");
             debug ("Opponent type selected: %s", opponent_type);
             debug ("Contact-id: %s", contact_id);
             debug ("Requested a chess channel to %s. gnome-chess-channel-handler takes charge. Now quitting", contact_id);
