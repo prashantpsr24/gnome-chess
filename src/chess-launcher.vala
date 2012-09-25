@@ -403,14 +403,15 @@ public class ChessLauncher : Gtk.Window
                  valid_iter = robot_list_model.iter_next (ref iter))
             {
                 string robot = null;
-                robot_list_model.get (iter, 0, &robot, -1);
+                robot_list_model.@get (iter, 0, out robot);
 
                 if (settings_common.get_string ("opponent") == robot)
                 {
+                    debug ("Last selected robot: %s", robot);
                     var robot_selection = treeview_robots.get_selection ();
                     robot_selection.select_iter (iter);
+                    break;
                 }
-                break;
             }
 
             if (settings_common.get_string ("opponent-type") == "robot")
@@ -666,7 +667,7 @@ public class ChessLauncher : Gtk.Window
     {
         /* Create game channel with the selected remote contact if any;
            eventually destroy */
-        if (contact != null)
+        if (settings_common.get_string ("opponent-type") == "remote-player" && contact != null)
             create_dbus_tube_channel ();
         else
             /* signal start_game which eventually destroys this launcher */
@@ -696,10 +697,14 @@ public class ChessLauncher : Gtk.Window
     {
         var robot_selection = treeview_robots.get_selection ();
         Gtk.TreeIter iter;
-        robot_selection.get_selected (null, out iter);
+
+        /* There is always a selected node, defaulting to the first robot in list */
+        bool got_robot_selection = robot_selection.get_selected (null, out iter);
+        assert (got_robot_selection);
 
         string selected_robot_opponent = null;
-        treeview_robots.model.get (iter, 0, &selected_robot_opponent);
+        treeview_robots.model.@get (iter, 0, out selected_robot_opponent);
+        debug ("Robot selected: %s", selected_robot_opponent);
         settings_common.set_string ("opponent", selected_robot_opponent);
 
         show_game_options ();
