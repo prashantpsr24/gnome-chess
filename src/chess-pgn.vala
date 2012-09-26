@@ -74,6 +74,16 @@ public class PGNGame
         get { return tags.lookup ("Time"); }
         set { tags.insert ("Time", value); }
     }
+    public string utcdate
+    {
+        get { return tags.lookup ("UTCDate"); }
+        set { tags.insert ("UTCDate", value); }
+    }
+    public string utctime
+    {
+        get { return tags.lookup ("UTCTime"); }
+        set { tags.insert ("UTCTime", value); }
+    }
     public string round
     {
         get { return tags.lookup ("Round"); }
