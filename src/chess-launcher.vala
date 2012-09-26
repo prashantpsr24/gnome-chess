@@ -84,6 +84,9 @@ public class ChessLauncher : Gtk.Window
 
         settings = new Settings ("org.gnome.gnome-chess");
         settings_common = new Settings ("org.gnome.gnome-chess.games-common");
+        settings.delay ();
+        settings_common.delay ();
+
         builder = new Gtk.Builder ();
         try
         {
@@ -232,6 +235,8 @@ public class ChessLauncher : Gtk.Window
         if (save_duration_timeout != 0)
             save_duration_cb ();
 
+        settings.apply ();
+        settings_common.apply ();
         Settings.sync ();
     }
 
@@ -440,6 +445,7 @@ public class ChessLauncher : Gtk.Window
             var unfinished = history.get_unfinished ();
             var file = unfinished.data;
 
+            /* We shouldn't apply settings made in this launching session */
             /* Signal load_game */
             load_game (file, true);
         }
@@ -647,6 +653,7 @@ public class ChessLauncher : Gtk.Window
                      show_game_selector ();
 
                      /* Not yet done launching. Don't quit */
+                     /* No need to apply settings yet */
                      return;
                 }
 
@@ -656,6 +663,12 @@ public class ChessLauncher : Gtk.Window
                 else
                   debug ("Unsuccessful in creating and dispatching DBus channel with %s.",
                       contact.id);
+
+                /* Save all settings */
+                settings.apply ();
+                settings_common.apply ();
+                Settings.sync ();
+
                 /* signal start_game which eventually destroys this launcher */
                 start_game ();
               }
@@ -668,10 +681,19 @@ public class ChessLauncher : Gtk.Window
         /* Create game channel with the selected remote contact if any;
            eventually destroy */
         if (settings_common.get_string ("opponent-type") == "remote-player" && contact != null)
+        {
             create_dbus_tube_channel ();
+        }
         else
+        {
+            /* Save all settings */
+            settings.apply ();
+            settings_common.apply ();
+            Settings.sync ();
+
             /* signal start_game which eventually destroys this launcher */
             start_game ();
+        }
     }
 
     [CCode (cname = "G_MODULE_EXPORT game_options_preferences_clicked_cb", instance_pos = -1)]
