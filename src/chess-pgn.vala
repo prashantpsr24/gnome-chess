@@ -35,7 +35,7 @@ public errordomain PGNError
     LOAD_ERROR
 }
 
-public class PGNGame
+public class PGNGame : Object
 {
     public HashTable<string, string> tags;
     public List<string> moves;
