@@ -26,11 +26,12 @@ public class HandlerApplication : Application
     /* Objects from gnome-chess-network-window.ui */
     private Gtk.Window? handler_window = null;
     private Gtk.Widget grid_main;
+    private Gtk.Widget grid_contacts_presence_and_channels;
 
     private Gtk.Widget combobox_presence;
     private Gtk.Widget button_goa;
-    private Gtk.Widget button_channels;
-    private Gtk.Widget button_contacts;
+    private Gtk.Action radioaction_channel_list;
+    private Gtk.Action radioaction_contact_list;
     private Gtk.Container scrolledwindow_list;
     private Gtk.Widget alignment_play;
 
@@ -40,9 +41,12 @@ public class HandlerApplication : Application
     private GamesContacts.IndividualView? individual_view = null;
     private GamesContacts.LiveSearch? search_widget;
 
+    private Gtk.Container scrolledwindow_channels;
     private Gtk.TreeView channel_view;
+    private Gtk.TreeSelection channel_view_selection;
 
     /* Objects from gnome-chess-game-window.ui */
+    private Gtk.Widget navigation_box;
     private Gtk.Widget view_box;
     private Gtk.Widget handler_menubar;
 
@@ -61,14 +65,17 @@ public class HandlerApplication : Application
         CHESS_GAME,
         CHESS_SCENE,
         INFO_BAR,
-        INFO_BAR_VISIBILITY,
         GAME_NEEDS_SAVING,
+        CHANNEL_APPROVED,
+        SHOW_STATUS_SCREEN,
+        STATUS_MESSAGE,
         NUM_COLS
     }
 
     /* Channels */
     Gtk.ListStore channels;
     Gtk.TreeIter? selected_channel_iter = null;
+    HashTable <string, int32> channel_count;
 
     public HandlerApplication ()
     {
@@ -88,12 +95,14 @@ public class HandlerApplication : Application
             typeof (ChessGame),              /* CHESS_GAME */
             typeof (ChessScene),             /* CHESS_SCENE */
             typeof (Gtk.InfoBar),            /* INFO_BAR */
-            typeof (bool),                   /* INFO_BAR_VISIBILITY */
-            typeof (bool)                    /* GAME_NEEDS_SAVING */
-           // typeof (), /*  */
+            typeof (bool),                   /* GAME_NEEDS_SAVING */
+            typeof (bool),                   /* CHANNEL_APPROVED */
+            typeof (bool),                   /* SHOW_STATUS_SCREEN */
+            typeof (string)                  /* STATUS_MESSAGE */
             );
 
-        (channel_view).cursor_changed.connect (cursor_changed_cb);
+        assert (channels != null);
+        channel_count = new HashTable <string, int32> (str_hash, str_equal);
 
         settings = new Settings ("org.gnome.gnome-chess");
         settings_common = new Settings ("org.gnome.gnome-chess.games-common");
@@ -130,15 +139,15 @@ public class HandlerApplication : Application
     {
         ChessGame? game = null;
         ChessScene? scene = null;
-        bool view_visible = true;
 
-        channels.@get (channel_iter, ChannelsColumn.CHESS_GAME, out game, ChannelsColumn.CHESS_SCENE, out scene);
+        model.@get (channel_iter, ChannelsColumn.CHESS_GAME, out game, ChannelsColumn.CHESS_SCENE, out scene);
         assert (game != null && scene != null);
         ChessView chess_view = (game as Object).get_data<ChessView> ("chess-view");
+
         if (chess_view != null)
         {
-            view_visible = chess_view.get_visible ();
-            view_container.remove (chess_view);
+            if ((chess_view as Gtk.Widget).get_parent () == view_container)
+                view_container.remove (chess_view);
             chess_view.destroy ();
         }
         if (settings_common.get_boolean ("show-3d"))
@@ -147,8 +156,9 @@ public class HandlerApplication : Application
             chess_view = new ChessView2D ();
         chess_view.set_size_request (300, 300);
         chess_view.scene = scene;
-        view_container.add (chess_view);
-        chess_view.set_visible (view_visible);
+        if (channel_iter == selected_channel_iter)
+            view_container.add (chess_view);
+        chess_view.set_visible (true);
 
         return false;
     }
@@ -161,42 +171,133 @@ public class HandlerApplication : Application
         }
     }
 
-    private void show_game ()
+    private void clear_view_box (Gtk.Widget child)
     {
-        TelepathyGLib.Contact? remote_player = null;
-        int64 action_time = -1;
+        (view_box as Gtk.Container).remove (child);
+    }
 
-        if (selected_channel_iter == null)
+    private void set_game_screen (bool show_status_screen, string message = "")
+    {
+        List view_box_children = (view_box as Gtk.Container).get_children ();
+
+        if (view_box_children.length () > 0)
+            (view_box as Gtk.Container).@foreach (clear_view_box);
+
+        if (show_status_screen)
         {
-            debug ("No channel iteration selected");
-            return;
+            (view_box as Gtk.Box).pack_start (new Gtk.Label (message));
+
+            /* Update menus' sensitivities */
+            resign_menu.sensitive =
+            save_menu.sensitive =
+            save_as_menu.sensitive = false;
         }
-        channels.@get (selected_channel_iter, ChannelsColumn.TARGET_CONTACT, out remote_player, ChannelsColumn.USER_ACTION_TIME, out action_time);
-
-        if (remote_player != null && action_time != -1)
+        else
         {
-            debug ("Showing game with %s. Initiation timeframe: %llu", remote_player.identifier, action_time);
+            ChessGame game;
+            bool game_needs_saving;
+            ChessScene chess_scene;
+            Gtk.InfoBar info_bar;
+            Gtk.TreeModel history_model;
+
+            assert (selected_channel_iter != null);
+            channels.@get (selected_channel_iter,
+                ChannelsColumn.CHESS_GAME, out game,
+                ChannelsColumn.GAME_NEEDS_SAVING, out game_needs_saving,
+                ChannelsColumn.CHESS_SCENE, out chess_scene,
+                ChannelsColumn.INFO_BAR, out info_bar,
+                ChannelsColumn.HISTORY_MODEL, out history_model);
+
+            /* Place the selected channel's infobar into view_box */
+            (view_box as Gtk.Box).pack_start (info_bar, false, true, 0);
+
+            (view_box as Gtk.Box).pack_start (view_container, false, true, 0);
+            (view_box as Gtk.Box).pack_start (navigation_box, false, true, 0);
+
+            /* Place the selected channel's view into view_container */
+            Gtk.Widget child = (view_container as Gtk.Bin).get_child ();
+            if (child != null)
+                view_container.remove (child);
+            Gtk.Widget view = (game as Object).get_data<ChessView> ("chess-view");
+            view_container.add (view);
+            view.show ();
+
+            /* Update menus' sensitivities */
+            if (game_needs_saving)
+            {
+                resign_menu.sensitive = game.n_moves > 0;
+                save_menu.sensitive = true;
+                save_as_menu.sensitive = true;
+            }
+
+            /* Update history-combo's model */
+            history_combo.set_model (history_model);
+
+            /* Update history panel */
+            update_history_panel (game, chess_scene, history_combo.model);
+
+            white_time_label.queue_draw ();
+            black_time_label.queue_draw ();
         }
     }
 
-    private void cursor_changed_cb ()
+    private void show_game ()
     {
-        Gtk.TreePath? path;
-        Gtk.TreeIter iter;
+        TelepathyGLib.Contact remote_player;
+        int64 action_time = -1;
+        bool channel_approved;
 
-        channel_view.get_cursor (out path, null);
-        if (path == null)
+        if (selected_channel_iter == null)
         {
-            debug ("Couldn't obtain path the cursor is at");
+            debug ("No channel selected");
             return;
         }
 
-        if (channels.get_iter (out iter, path))
-        {
-            selected_channel_iter = iter;
+        channels.@get (selected_channel_iter,
+            ChannelsColumn.TARGET_CONTACT, out remote_player,
+            ChannelsColumn.USER_ACTION_TIME, out action_time,
+            ChannelsColumn.CHANNEL_APPROVED, out channel_approved);
 
-            show_game ();
+        assert (action_time != -1);
+
+        debug ("Showing game with %s. Initiation timeframe: %lld", remote_player.identifier, action_time);
+
+        if (!channel_approved)
+        {
+            string status_message = "Waiting for game request to be approved by %s".printf (remote_player.get_alias ());
+            set_game_screen (true, status_message);
         }
+        else
+        {
+            set_game_screen (false);
+        }
+    }
+
+    private void channel_selection_changed_cb ()
+    {
+        Gtk.TreeIter? selected_channel_iter = null;
+
+        if (! channel_view_selection.get_selected (null, out selected_channel_iter))
+        {
+            debug ("Couldn't obtain selected channel iterator");
+            return;
+        }
+
+        this.selected_channel_iter = selected_channel_iter;
+
+        show_game ();
+    }
+
+    private void channel_name_func (Gtk.TreeViewColumn tree_column, Gtk.CellRenderer cell, Gtk.TreeModel tree_model, Gtk.TreeIter iter)
+    {
+        string player_name;
+        TelepathyGLib.Contact target_contact;
+        int64 initiation_time;
+
+        channels.@get (iter, ChannelsColumn.TARGET_CONTACT, out target_contact, ChannelsColumn.USER_ACTION_TIME, out initiation_time);
+
+        player_name = target_contact.alias;
+        (cell as Gtk.CellRendererText).text = "Game %d with %s".printf (channel_count.@get (target_contact.identifier), player_name);
     }
 
     private void create_handler_window ()
@@ -213,16 +314,15 @@ public class HandlerApplication : Application
         handler_window.delete_event.connect (handler_window.hide_on_delete);
 
         grid_main = (Gtk.Widget) builder.get_object ("grid_main");
+        grid_contacts_presence_and_channels = (Gtk.Widget) builder.get_object ("grid_contacts_presence_and_channels");
         combobox_presence = (Gtk.Widget) builder.get_object
             ("combobox_presence");
         button_goa = (Gtk.Widget) builder.get_object ("button_goa");
-        button_channels = (Gtk.Widget) builder.get_object ("button_channels");
-        button_contacts = (Gtk.Widget) builder.get_object ("button_contacts");
+        radioaction_channel_list = (Gtk.Action) builder.get_object ("radioaction_channel_list");
+        radioaction_contact_list = (Gtk.Action) builder.get_object ("radioaction_contact_list");
         scrolledwindow_list = (Gtk.Container) builder.get_object ("scrolledwindow_list");
         contacts_box = (Gtk.Widget) builder.get_object ("contacts_box");
         alignment_play = (Gtk.Widget) builder.get_object ("alignment_play");
-
-        channel_view = new Gtk.TreeView ();
 
         /* Add objects from gnome-chess-game-window.ui */
         try {
@@ -230,16 +330,30 @@ public class HandlerApplication : Application
               "gnome-chess-game-window.ui", null),
               objects_from_traditional_window);
 
-            view_box = (Gtk.Widget) builder.get_object ("view_box");
-            view_container = (Gtk.Container) builder.get_object ("view_container");
             handler_menubar = (Gtk.Widget) builder.get_object ("menubar");
 
             handler_menubar.unparent ();
-            (grid_main as Gtk.Grid).attach (handler_menubar, 0, 0, 2, 1);
+            (grid_main as Gtk.Grid).attach (handler_menubar, 0, 0, 1, 1);
 
+            save_menu = (Gtk.Widget) builder.get_object ("menu_save_item");
+            save_as_menu = (Gtk.Widget) builder.get_object ("menu_save_as_item");
+            fullscreen_menu = (Gtk.MenuItem) builder.get_object ("fullscreen_item");
+            resign_menu = (Gtk.Widget) builder.get_object ("resign_item");
+
+            view_box = (Gtk.Widget) builder.get_object ("view_box");
             view_box.reparent (alignment_play);
 
-            grid_main.show_all ();
+            view_container = (Gtk.Container) builder.get_object ("view_container");
+
+            first_move_button = (Gtk.Widget) builder.get_object ("first_move_button");
+            prev_move_button = (Gtk.Widget) builder.get_object ("prev_move_button");
+            next_move_button = (Gtk.Widget) builder.get_object ("next_move_button");
+            last_move_button = (Gtk.Widget) builder.get_object ("last_move_button");
+            history_combo = (Gtk.ComboBox) builder.get_object ("history_combo");
+            white_time_label = (Gtk.Widget) builder.get_object ("white_time_label");
+            black_time_label = (Gtk.Widget) builder.get_object ("black_time_label");
+            navigation_box = (Gtk.Widget) builder.get_object ("navigation_box");
+            settings_common.bind ("show-history", navigation_box, "visible", SettingsBindFlags.DEFAULT);
         }
         catch (Error e)
         {
@@ -253,8 +367,25 @@ public class HandlerApplication : Application
 
         prepare_contact_list ();
 
+        scrolledwindow_channels = new Gtk.ScrolledWindow (null, null);
         channel_view = new Gtk.TreeView ();
         channel_view.model = channels;
+        scrolledwindow_channels.add (channel_view);
+
+        Gtk.CellRendererText text_renderer = new Gtk.CellRendererText ();
+        channel_view.insert_column_with_data_func (-1, "", text_renderer, channel_name_func);
+
+        channel_view_selection = channel_view.get_selection ();
+        /* Enforce: user can't deselect a currently selected element except by selecting
+         * another element*/
+        channel_view_selection.set_mode (Gtk.SelectionMode.BROWSE);
+        channel_view_selection.changed.connect (channel_selection_changed_cb);
+        (channel_view as Gtk.Widget).show ();
+
+        (scrolledwindow_channels as Gtk.Widget).expand = true;
+        (scrolledwindow_channels as Gtk.Widget).show ();
+
+        grid_main.show_all ();
     }
 
     private void prepare_contact_list ()
@@ -289,18 +420,30 @@ public class HandlerApplication : Application
         (contacts_box as Gtk.Container).add (search_widget);
     }
 
-    [CCode (cname = "G_MODULE_EXPORT channels_clicked_cb", instance_pos=-1)]
-    public void channels_clicked_cb (Gtk.Button button)
+    [CCode (cname = "G_MODULE_EXPORT list_changed_cb", instance_pos=-1)]
+    public void list_changed_cb (Gtk.RadioAction action, Gtk.RadioAction current_action)
     {
-        scrolledwindow_list.remove (contacts_box);
-        scrolledwindow_list.add (channel_view);
-    }
+        if (action != current_action)
+            return;
 
-    [CCode (cname = "G_MODULE_EXPORT contacts_clicked_cb", instance_pos=-1)]
-    public void contacts_clicked_cb (Gtk.Button button)
-    {
-        scrolledwindow_list.remove (channel_view);
-        scrolledwindow_list.add (contacts_box);
+        if (current_action == radioaction_channel_list &&
+            (grid_contacts_presence_and_channels as Gtk.Grid).get_child_at (0, 1) == contacts_box &&
+            contacts_box.get_parent () == grid_contacts_presence_and_channels)
+        {
+
+            (grid_contacts_presence_and_channels as Gtk.Container).remove (contacts_box);
+            (grid_contacts_presence_and_channels as Gtk.Grid).attach (scrolledwindow_channels, 0, 1, 1, 1);
+        }
+        else
+        {
+            if (current_action == radioaction_contact_list &&
+                (grid_contacts_presence_and_channels as Gtk.Grid).get_child_at (0, 1) == scrolledwindow_channels &&
+                (scrolledwindow_channels as Gtk.Widget).get_parent () == grid_contacts_presence_and_channels);
+            {
+                (grid_contacts_presence_and_channels as Gtk.Container).remove (scrolledwindow_channels);
+                (grid_contacts_presence_and_channels as Gtk.Grid).attach (contacts_box, 0, 1, 1, 1);
+            }
+        }
     }
 
     [CCode (cname = "G_MODULE_EXPORT goa_clicked_cb", instance_pos=-1)]
@@ -324,7 +467,15 @@ public class HandlerApplication : Application
 
         channels.@get (channel_iter, ChannelsColumn.USER_ACTION_TIME, out initiation_time, ChannelsColumn.CHANNEL, out channel);
 
-        debug ("Removing chess tube channel with %s initiated at instance: %lld", channel.target_contact.identifier, initiation_time);
+        var target_id = channel.target_contact.identifier;
+        debug ("Removing chess tube channel with %s initiated at instance: %lld", target_id, initiation_time);
+
+        /* Decrease channel count */
+        var count = channel_count.@get (target_id);
+        if (count == 1)
+            channel_count.remove (target_id);
+        else
+            channel_count.@set (target_id, count-1);
 
         return false;
     }
@@ -333,43 +484,52 @@ public class HandlerApplication : Application
     private void quit_game ()
     {
         Settings.sync ();
-        channels.@foreach (save_game_and_remove_channel);
+
+        if (channels != null)
+            channels.@foreach (save_game_and_remove_channel);
+
+        (handler_window as Gtk.Widget).destroy ();
     }
 
     private new void game_move_cb (ChessGame game, ChessMove move)
     {
-        Gtk.TreeIter *channel_iter;
+        Gtk.TreeIter channel_iter;
         ChessView chess_view;
+        PGNGame pgn_game;
 
-        channel_iter = (game as Object).get_data ("channel-iter");
+        string channel_path_string = (game as Object).get_data<string> ("channel-path-string");
+        channels.get_iter_from_string (out channel_iter, channel_path_string);
         chess_view = (game as Object).get_data<ChessView> ("chess-view");
+        pgn_game = (game as Object).get_data<PGNGame> ("pgn-game");
 
         /* Need to save after each move */
-        channels.@set (*channel_iter, ChannelsColumn.GAME_NEEDS_SAVING, true);
+        channels.@set (channel_iter, ChannelsColumn.GAME_NEEDS_SAVING, true);
 
         if (move.number > pgn_game.moves.length ())
             pgn_game.moves.append (move.get_san ());
 
         Gtk.ListStore model;
         ChessScene scene;
-        channels.@get (*channel_iter, ChannelsColumn.HISTORY_MODEL, out model, ChannelsColumn.CHESS_SCENE, out scene);
+        channels.@get (channel_iter, ChannelsColumn.HISTORY_MODEL, out model, ChannelsColumn.CHESS_SCENE, out scene);
 
         Gtk.TreeIter iter;
         model.append (out iter);
-        model.set (iter, 1, move.number, -1);
+        model.@set (iter, 1, move.number);
         set_move_text (iter, move, scene, model);
 
         /* Follow the latest move */
         if (move.number == game.n_moves && scene.move_number == -1)
-            channels.@set (*channel_iter, ChannelsColumn.HISTORY_COMBO_ACTIVE_ITER, iter);
+            channels.@set (channel_iter, ChannelsColumn.HISTORY_COMBO_ACTIVE_ITER, iter);
 
         update_history_model (game, scene, model);
 
         /* UI updation */
-        if (selected_channel_iter == *channel_iter)
+        if (selected_channel_iter == channel_iter)
         {
-            update_history_panel (game,scene, model);
-            update_control_buttons ();
+            update_history_panel (game, scene, model);
+            resign_menu.sensitive = game.n_moves > 0;
+            save_menu.sensitive = true;
+            save_as_menu.sensitive = true;
         }
 
         /* TODO: Acknowledge if opponent made this move */
@@ -378,14 +538,19 @@ public class HandlerApplication : Application
     }
 
     private void create_and_add_game (TelepathyGLib.DBusTubeChannel tube,
-        Gtk.TreeIter iter)
+        Gtk.TreeIter channel_iter)
     {
         /* Create a new game with the offered parameters */
         Variant tube_params = tube.dup_parameters_vardict ();
-        bool our_color_white;
-        tube_params.lookup ("offerer-white", "b", out our_color_white);
+        bool offerer_white, our_color_white;
+        tube_params.lookup ("offerer-white", "b", out offerer_white);
+        our_color_white = (tube as TelepathyGLib.Channel).requested ? offerer_white : !offerer_white;
         int32 duration;
         tube_params.lookup ("duration", "i", out duration);
+
+        debug ("Creating a new chess match with our colour:%s and timeout duration:%s",
+            our_color_white ? "white" : "black",
+            duration > 0 ? duration.to_string () + " seconds" : "no limit");
 
         var pgn_game = new PGNGame ();
         var now = new DateTime.now_local ();
@@ -397,7 +562,10 @@ public class HandlerApplication : Application
         if (duration > 0)
             pgn_game.time_control = "%d".printf (duration);
 
-        var history_model = new Gtk.ListStore (2, typeof (string), typeof (int));
+        Gtk.ListStore? history_model = null;
+        history_model = new Gtk.ListStore (2, typeof (string), typeof (int));
+        assert (history_model != null);
+        history_model.insert_with_values (null, -1, 0, _("Game Start"), 1, 0);
 
         string fen = ChessGame.STANDARD_SETUP;
         string[] moves = new string[pgn_game.moves.length ()];
@@ -414,7 +582,9 @@ public class HandlerApplication : Application
         }
         var game = new ChessGame (fen, moves);
         (game as Object).set_data<PGNGame> ("pgn-game", pgn_game);
-        (game as Object).set_data<Gtk.TreeIter*> ("channel-iter", &iter);
+        (game as Object).set_data<string> ("channel-path-string", channels.get_string_from_iter (channel_iter));
+        /* Associate history_model for access in scene_changed_cb */
+        game.set_data<Gtk.TreeModel> ("history-model", history_model);
 
         if (pgn_game.time_control != null)
         {
@@ -437,12 +607,17 @@ public class HandlerApplication : Application
         scene.changed.connect (scene_changed_cb);
         scene.choose_promotion_type.connect (show_promotion_type_selector);
         scene.game = game;
+        settings_common.bind ("show-move-hints", scene, "show-move-hints", SettingsBindFlags.GET);
+        settings_common.bind ("show-numbering", scene, "show-numbering", SettingsBindFlags.GET);
+        settings_common.bind ("piece-theme", scene, "theme-name", SettingsBindFlags.GET);
+        settings_common.bind ("show-3d-smooth", scene, "show-3d-smooth", SettingsBindFlags.GET);
+        settings_common.bind ("move-format", scene, "move-format", SettingsBindFlags.GET);
+        settings_common.bind ("board-side", scene, "board-side", SettingsBindFlags.GET);
 
         Gtk.InfoBar info_bar;
 
         info_bar = new Gtk.InfoBar ();
         var content_area = (Gtk.Container) info_bar.get_content_area ();
-        (view_box as Gtk.Box).pack_start (info_bar, false, true, 0);
         var vbox = new Gtk.Box (Gtk.Orientation.VERTICAL, 6);
         vbox.show ();
         content_area.add (vbox);
@@ -455,6 +630,7 @@ public class HandlerApplication : Application
         info_label.show ();
         vbox.pack_start (info_label, true, true, 0);
 
+        /* All info-bars are hidden when created with visibility updated as and when needed */
         info_bar.hide ();
 
         (game as Object).set_data<Gtk.InfoBar> ("info-bar", info_bar);
@@ -481,14 +657,13 @@ public class HandlerApplication : Application
         white_time_label.queue_draw ();
         black_time_label.queue_draw ();
 
-        channels.insert_with_values (null, -1,
+        channels.@set (channel_iter,
             ChannelsColumn.OUR_COLOUR_WHITE, our_color_white,
             ChannelsColumn.PGN_GAME, pgn_game,
             ChannelsColumn.HISTORY_MODEL, history_model,
             ChannelsColumn.CHESS_GAME, game,
             ChannelsColumn.CHESS_SCENE, scene,
             ChannelsColumn.INFO_BAR, info_bar,
-            ChannelsColumn.INFO_BAR_VISIBILITY, info_bar.visible,
             ChannelsColumn.GAME_NEEDS_SAVING, game_needs_saving);
     }
 
@@ -496,7 +671,7 @@ public class HandlerApplication : Application
         TelepathyGLib.DBusTubeChannel tube,
         Gtk.TreeIter channel_iter)
     {
-      //  display_game ();
+        debug ("Registering objects over dbus connection");
     }
 
     private void offer_tube (TelepathyGLib.DBusTubeChannel tube,
@@ -514,7 +689,7 @@ public class HandlerApplication : Application
 
         debug ("Offering tube with offerer-white:%s and duration:%ld",
         colour_val.get_boolean () ? "true" : "false", duration_val.get_int ());
-//        debug ("Parameters passed: %s", );
+        /* This hashtable is purely offerer defined and cast here is the secret gotcha */
         tube.offer_async.begin ((HashTable<void*, void*>?)tube_params,
             (obj, res)=>{
                 try
@@ -526,20 +701,10 @@ public class HandlerApplication : Application
                     debug ("Failed to offer tube to %s: %s",
                         (tube as TelepathyGLib.Channel).target_contact.identifier,
                         e.message);
-                  //  display_channel_error (channel_iter, e, "Failed to offer chess game channel to %s", (tube as TelepathyGLib.Channel).target_contact.identifier);
-                    debug ("Closing channel.");
-                    (tube as TelepathyGLib.Channel).close_async.begin ((obj, res)=>
-                        {
-                            try
-                            {
-                                (tube as TelepathyGLib.Channel).close_async.end (res);
-                            }
-                            catch (Error e)
-                            {
-                                debug ("Couldn't close the channel: %s", e.message);
-                            }
-                        });
 
+                    channels.@set (channel_iter,
+                        ChannelsColumn.SHOW_STATUS_SCREEN, true,
+                        ChannelsColumn.STATUS_MESSAGE, "Failed to offer chess game channel to %s\n The error was: %s", (tube as TelepathyGLib.Channel).target_contact.identifier, e.message);
 
                     /* Nothing to do */
                     return;
@@ -547,7 +712,7 @@ public class HandlerApplication : Application
 
                 assert (connection != null);
 
-                debug ("Tube opened.");
+                debug ("Offered tube opened.");
                 connection.notify["closed"].connect (
                     (s, p)=>{
                         debug ("Connection to %s closed unexpectedly",
@@ -557,8 +722,19 @@ public class HandlerApplication : Application
                 );
                 create_and_add_game (tube, channel_iter);
                 register_objects (connection, tube, channel_iter);
+
+                /* Now we can display the game */
+                channels.@set (channel_iter, ChannelsColumn.CHANNEL_APPROVED, true);
+
+                /* If this is the selected channel, update it's display since it has been approved */
+                if (channel_iter == selected_channel_iter)
+                    set_game_screen (false);
+
               }
             );
+
+        /* This offered tube has not yet been approved by remote contact */
+        channels.@set (channel_iter, ChannelsColumn.CHANNEL_APPROVED, false);
     }
 
     private void accept_tube (TelepathyGLib.DBusTubeChannel tube,
@@ -576,22 +752,11 @@ public class HandlerApplication : Application
                 catch (Error e)
                 {
                     debug ("Failed to accept tube from %s: %s",
-                        (tube as TelepathyGLib.Channel).target_contact.identifier,
-                        e.message);
-//                    display_error (channel_iter, e, "Failed to offer chess game channel to %s", (tube as TelepathyGLib.Channel).target_contact.identifer);
-                    debug ("Closing channel.");
+                        (tube as TelepathyGLib.Channel).target_contact.identifier, e.message);
 
-                    (tube as TelepathyGLib.Channel).close_async.begin ((obj, res)=>
-                        {
-                            try
-                            {
-                                (tube as TelepathyGLib.Channel).close_async.end (res);
-                            }
-                            catch (Error e)
-                            {
-                                debug ("Couldn't close the channel: %s", e.message);
-                            }
-                        });
+                    channels.@set (channel_iter,
+                        ChannelsColumn.SHOW_STATUS_SCREEN, true,
+                        ChannelsColumn.STATUS_MESSAGE, "Failed to accept chess game channel from %s\n The error was: %s", (tube as TelepathyGLib.Channel).target_contact.identifier, e.message);
 
                     /* Nothing to do */
                     return;
@@ -599,7 +764,7 @@ public class HandlerApplication : Application
 
                 assert (connection != null);
 
-                debug ("Tube opened.");
+                debug ("Accepted tube opened.");
                 connection.notify["closed"].connect (
                     (s, p)=>{
                         debug ("Connection to %s closed unexpectedly",
@@ -608,9 +773,38 @@ public class HandlerApplication : Application
                     }
                 );
                 create_and_add_game (tube, channel_iter);
+
+                /* We can now display the game */
+                channels.@set (channel_iter, ChannelsColumn.CHANNEL_APPROVED, true);
+
+                /* If this is the selected channel, update it's display since it has been approved */
+                if (channel_iter == selected_channel_iter)
+                    set_game_screen (false);
+
               }
             );
 
+        /* Channels at accepter end are never waiting for approval from anyone
+         * but just for accept_async() to finish and call the callback */
+        channels.@set (channel_iter, ChannelsColumn.CHANNEL_APPROVED, false);
+    }
+
+    private void close_channel (TelepathyGLib.Channel tube)
+    {
+        debug ("Closing channel.");
+
+        (tube).close_async.begin ((obj, res)=>
+            {
+                try
+                {
+                    (tube).close_async.end (res);
+                }
+                catch (Error e)
+                {
+                    debug ("Couldn't close the channel: %s", e.message);
+                }
+            }
+            );
     }
 
     private void tube_invalidated_cb (TelepathyGLib.Proxy tube_channel,
@@ -620,16 +814,16 @@ public class HandlerApplication : Application
     {
         debug ("Tube has been invalidated: %s", message);
 
-        channels.@foreach ((model, path, iter)=>
+        (channels as Gtk.TreeModel).@foreach ((model, path, iter)=>
             {
                 TelepathyGLib.Channel stored_tube;
-                uint64 user_action_time;
-                channels.@get (iter, ChannelsColumn.CHANNEL, out stored_tube,
+                int64 user_action_time;
+                (channels as Gtk.TreeModel).@get (iter, ChannelsColumn.CHANNEL, out stored_tube,
                     ChannelsColumn.USER_ACTION_TIME, out user_action_time);
 
                 if (stored_tube == tube_channel)
                 {
-                    debug ("Removing chess dbus-tube channel initiated at timeframe %llu with remote player %s",
+                    debug ("Removing chess dbus-tube channel initiated at timeframe %lld with remote player %s",
                         user_action_time, stored_tube.target_contact.identifier);
                     channels.remove (iter);
                     return true;
@@ -648,14 +842,13 @@ public class HandlerApplication : Application
         int64 action_time,
         TelepathyGLib.HandleChannelsContext context)
     {
-        Error error = new TelepathyGLib.Error.NOT_AVAILABLE (
-            "No channel to be handled");
+        Error error = new TelepathyGLib.Error.NOT_AVAILABLE ("No channel to be handled");
 
         debug ("Handling channels");
 
         foreach (TelepathyGLib.Channel tube_channel in channel_bundle)
         {
-          Gtk.TreeIter iter;
+          Gtk.TreeIter channel_iter;
 
           if (! (tube_channel is TelepathyGLib.DBusTubeChannel))
             continue;
@@ -664,22 +857,34 @@ public class HandlerApplication : Application
             continue;
 
           /* Add channel to list of currently handled channels */
-          channels.insert_with_values (out iter, -1,
+          channels.insert_with_values (out channel_iter, -1,
               ChannelsColumn.USER_ACTION_TIME, action_time,
               ChannelsColumn.TARGET_CONTACT, tube_channel.target_contact,
               ChannelsColumn.CHANNEL, tube_channel);
 
+          debug ("Channel inserted into cache. Total channels: %d", channels.iter_n_children (null));
+
+          var target_id = tube_channel.target_contact.identifier;
+          if (channel_count.contains (target_id))
+              channel_count.@set (target_id, channel_count.@get (target_id) + 1);
+          else
+              channel_count.insert (target_id, 1);
+
+          debug ("We now hold %d channels with %s", channel_count.@get (target_id), target_id);
+
+          /* If this is the first insertion, set it as selected */
+          if (channels.iter_n_children (null) == 1)
+              channel_view_selection.select_iter (channel_iter);
+
           if (tube_channel.requested)
           {
-              /* We created this channel. Make a tube offer and wait for
-               * approval */
-              offer_tube (tube_channel as TelepathyGLib.DBusTubeChannel, iter);
-             // display_waiting_for_approval (iter);
+              /* We created this channel. Make a tube offer and wait for approval */
+              offer_tube (tube_channel as TelepathyGLib.DBusTubeChannel, channel_iter);
           }
           else
           {
               /* This is an incoming channel request */
-              accept_tube (tube_channel as TelepathyGLib.DBusTubeChannel, iter);
+              accept_tube (tube_channel as TelepathyGLib.DBusTubeChannel, channel_iter);
           }
 
           (tube_channel as TelepathyGLib.Proxy).invalidated.connect (
