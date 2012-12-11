@@ -9,11 +9,33 @@ LDADD = \
 	$(top_builddir)/libgames-contacts/libgames-contacts.la \
 	$(GNOME_CHESS_LIBS)
 
+test_demo_gdbus_server_CFLAGS = \
+	$(GIO_CFLAGS)
+
+test_demo_gdbus_server_LDADD = \
+	$(GIO_LIBS)
+
+test_demo_gdbus_client_CFLAGS = \
+	$(GIO_CFLAGS)
+
+test_demo_gdbus_client_LDADD = \
+	$(GIO_LIBS)
+
+test_demo_gdbus_server_VALAFLAGS = \
+	--pkg gio-2.0
+
+test_demo_gdbus_client_VALAFLAGS = \
+	--pkg gio-2.0
+
 networking_tests = \
 	test-fetch-contacts
 
-noinst_PROGRAMS =
+vala_tests = \
+	test-demo-gdbus-client \
+	test-demo-gdbus-server
 
+noinst_PROGRAMS = \
+	$(vala_tests)
 
 if ENABLE_NETWORKING
 noinst_PROGRAMS += \
@@ -28,3 +50,7 @@ LDADD += \
 endif #ENABLE_NETWORKING
 
 test_fetch_contacts_SOURCES = test-fetch-contacts.c
+
+test_demo_gdbus_server_SOURCES = test-demo-gdbus-server.vala
+test_demo_gdbus_client_SOURCES = test-demo-gdbus-client.vala
+
