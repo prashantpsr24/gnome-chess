@@ -109,6 +109,7 @@ help/Makefile
 po/Makefile.in
 src/Makefile
 libgames-contacts/Makefile
+tests/Makefile
 ])
 
 echo "
