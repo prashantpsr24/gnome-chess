@@ -144,7 +144,7 @@ public class Application : Gtk.Application
         builder = new Gtk.Builder ();
         try
         {
-            builder.add_from_file (Path.build_filename (PKGDATADIR, "gnome-chess.ui", null));
+            builder.add_from_file (Path.build_filename (Config.PKGDATADIR, "gnome-chess.ui", null));
         }
         catch (Error e)
         {
@@ -244,7 +244,7 @@ public class Application : Gtk.Application
         settings.changed.connect (settings_changed_cb);
         settings_changed_cb (settings, "show-3d");
 
-        string engines_file = Path.build_filename (PKGDATADIR, "engines.conf", null);
+        string engines_file = Path.build_filename (Config.PKGDATADIR, "engines.conf", null);
         ai_profiles = load_ai_profiles (engines_file);
 
         foreach (var profile in ai_profiles)
@@ -286,7 +286,7 @@ public class Application : Gtk.Application
 
         }
 
-        if (!ENABLE_NETWORKING)
+        if (!Config.ENABLE_NETWORKING)
           togglebutton_remote_player.hide ();
 
         if (game_file == null)
@@ -333,7 +333,7 @@ public class Application : Gtk.Application
         promotion_type_selector_builder = new Gtk.Builder ();
         try
         {
-            promotion_type_selector_builder.add_from_file (Path.build_filename (PKGDATADIR, "promotion-type-selector.ui", null));
+            promotion_type_selector_builder.add_from_file (Path.build_filename (Config.PKGDATADIR, "promotion-type-selector.ui", null));
         }
         catch (Error e)
         {
@@ -348,16 +348,16 @@ public class Application : Gtk.Application
         else
             color = "black";
 
-        var filename = Path.build_filename (PKGDATADIR, "pieces", scene.theme_name, "%sQueen.svg".printf (color));
+        var filename = Path.build_filename (Config.PKGDATADIR, "pieces", scene.theme_name, "%sQueen.svg".printf (color));
         set_piece_image (promotion_type_selector_builder.get_object ("image_queen") as Gtk.Image, filename);
 
-        filename = Path.build_filename (PKGDATADIR, "pieces", scene.theme_name, "%sKnight.svg".printf (color));
+        filename = Path.build_filename (Config.PKGDATADIR, "pieces", scene.theme_name, "%sKnight.svg".printf (color));
         set_piece_image (promotion_type_selector_builder.get_object ("image_knight") as Gtk.Image, filename);
 
-        filename = Path.build_filename (PKGDATADIR, "pieces", scene.theme_name, "%sRook.svg".printf (color));
+        filename = Path.build_filename (Config.PKGDATADIR, "pieces", scene.theme_name, "%sRook.svg".printf (color));
         set_piece_image (promotion_type_selector_builder.get_object ("image_rook") as Gtk.Image, filename);
 
-        filename = Path.build_filename (PKGDATADIR, "pieces", scene.theme_name, "%sBishop.svg".printf (color));
+        filename = Path.build_filename (Config.PKGDATADIR, "pieces", scene.theme_name, "%sBishop.svg".printf (color));
         set_piece_image (promotion_type_selector_builder.get_object ("image_bishop") as Gtk.Image, filename);
 
         promotion_type_selector_builder.connect_signals (this);
@@ -1607,7 +1607,7 @@ public class Application : Gtk.Application
         preferences_builder = new Gtk.Builder ();
         try
         {
-            preferences_builder.add_from_file (Path.build_filename (PKGDATADIR, "preferences.ui", null));
+            preferences_builder.add_from_file (Path.build_filename (Config.PKGDATADIR, "preferences.ui", null));
         }
         catch (Error e)
         {
@@ -1881,7 +1881,7 @@ public class Application : Gtk.Application
         about_dialog.transient_for = window;
         about_dialog.modal = true;
         about_dialog.program_name = "Chess";
-        about_dialog.version = VERSION;
+        about_dialog.version = Config.VERSION;
         about_dialog.copyright = "Copyright 2010 Robert Ancell <robert.ancell@gmail.com>";
         about_dialog.license_type = Gtk.License.GPL_2_0;
         about_dialog.comments = _("The 2D/3D chess game for GNOME. \n\nGNOME Chess is a part of GNOME Games.");
@@ -2125,15 +2125,15 @@ class GnomeChess
     public static int main (string[] args)
     {
         Intl.setlocale (LocaleCategory.ALL, "");
-        Intl.bindtextdomain (GETTEXT_PACKAGE, LOCALEDIR);
-        Intl.bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
-        Intl.textdomain (GETTEXT_PACKAGE);
+        Intl.bindtextdomain (Config.GETTEXT_PACKAGE, Config.LOCALEDIR);
+        Intl.bind_textdomain_codeset (Config.GETTEXT_PACKAGE, "UTF-8");
+        Intl.textdomain (Config.GETTEXT_PACKAGE);
 
         Gtk.init (ref args);
 
         var c = new OptionContext (/* Arguments and description for --help text */
                                    _("[FILE] - Play Chess"));
-        c.add_main_entries (options, GETTEXT_PACKAGE);
+        c.add_main_entries (options, Config.GETTEXT_PACKAGE);
         c.add_group (Gtk.get_option_group (true));
         try
         {
@@ -2150,7 +2150,7 @@ class GnomeChess
         if (show_version)
         {
             /* Note, not translated so can be easily parsed */
-            stderr.printf ("gnome-chess %s\n", VERSION);
+            stderr.printf ("gnome-chess %s\n", Config.VERSION);
             return Posix.EXIT_SUCCESS;
         }
 
