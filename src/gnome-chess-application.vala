@@ -331,7 +331,7 @@ public class Application : Gtk.Application
         }
     }
 
-    private void settings_changed_cb (Settings settings, string key)
+    protected void settings_changed_cb (Settings settings, string key)
     {
         if (key == "show-3d")
         {
