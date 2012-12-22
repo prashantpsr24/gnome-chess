@@ -1110,7 +1110,7 @@ tp_caps_to_capabilities (GamesContact *self,
   GamesCapabilities capabilities = 0;
 
   if (tp_capabilities_supports_dbus_tubes (caps, TP_HANDLE_TYPE_CONTACT,
-        TP_CLIENT_BUS_NAME_BASE "Games.Glchess"))
+        TP_CLIENT_BUS_NAME_BASE "Gnome.Chess"))
   {
     g_debug ("Contact %s(%s) has glchess playing capabilities",
         games_contact_get_alias (self), games_contact_get_id (self));
