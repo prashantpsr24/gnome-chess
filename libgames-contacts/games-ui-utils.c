@@ -65,7 +65,7 @@ games_xml_validate (xmlDoc      *doc,
   xmlDtd *dtd;
   gboolean ret;
 
-  path = g_build_filename (PKGDATADIR, PACKAGE, dtd_filename, NULL);
+  path = g_build_filename (PKGDATADIR, dtd_filename, NULL);
 
   g_debug ("Loading dtd file %s", path);
 
