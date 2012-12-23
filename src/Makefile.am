@@ -94,7 +94,8 @@ gnome_chess_VALAFLAGS = \
     --pkg gmodule-2.0 \
     --pkg librsvg-2.0 \
     --pkg posix \
-    --pkg sqlite3
+    --pkg sqlite3 \
+ 	  --pkg gio-2.0
 
 if ENABLE_NETWORKING
 gnome_chess_CFLAGS += $(FOLKS_CFLAGS)

@@ -672,6 +672,22 @@ public class HandlerApplication : Application
         Gtk.TreeIter channel_iter)
     {
         debug ("Registering objects over dbus connection");
+
+        ChessGame game;
+        channels.@get (channel_iter, ChannelsColumn.CHESS_GAME, out game);
+
+        Variant tube_params = tube.dup_parameters_vardict ();
+        bool play_as_white = (tube_params.lookup_value ("offerer-white", VariantType.BOOLEAN)).get_boolean ();
+        ChessPlayer my_player;
+        my_player = play_as_white ? game.white : game.black;
+
+        try {
+            connection.register_object<ChessPlayer> ("/org/freedesktop/Telepathy/Client/Gnome/Chess/ChessPlayer", my_player);
+            debug ("ChessPlayer registered successfully");
+        } catch (IOError e) {
+            debug ("Could not register ChessPlayer object");
+        }
+
     }
 
     private void offer_tube (TelepathyGLib.DBusTubeChannel tube,

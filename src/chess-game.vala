@@ -4,25 +4,34 @@ public enum Color
     BLACK
 }
 
+[DBus (name = "org.gnome.Chess.ChessPlayer")]
 public class ChessPlayer : Object
 {
+    [DBus (visible = false)]
     public Color color;
+    [DBus (visible = false)]
     public signal void start_turn ();
     public signal bool do_move (string move, bool apply);
+    [DBus (visible = false)]
     public signal void do_undo ();
+    [DBus (visible = false)]
     public signal bool do_resign ();
+    [DBus (visible = false)]
     public signal bool do_claim_draw ();
 
+    [DBus (visible = false)]
     public ChessPlayer (Color color)
     {
         this.color = color;
     }
 
+    [DBus (visible = false)]
     public bool move (string move, bool apply = true)
     {
         return do_move (move, apply);
     }
 
+    [DBus (visible = false)]
     public bool move_with_coords (int r0, int f0, int r1, int f1,
         bool apply = true, PieceType promotion_type = PieceType.QUEEN)
     {
@@ -49,6 +58,7 @@ public class ChessPlayer : Object
         return do_move (move, apply);
     }
 
+    [DBus (visible = false)]
     public void undo ()
     {
         do_undo ();
