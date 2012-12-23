@@ -64,6 +64,9 @@ public class Application : Gtk.Application
     {
         base.startup ();
 
+        if (this is HandlerApplication)
+            return;
+
         settings = new Settings ("org.gnome.gnome-chess");
         settings_common = new Settings ("org.gnome.gnome-chess.games-common");
 
