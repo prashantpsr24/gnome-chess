@@ -853,7 +853,7 @@ public class HandlerApplication : Application
           if (! (tube_channel is TelepathyGLib.DBusTubeChannel))
             continue;
           if ((tube_channel as TelepathyGLib.DBusTubeChannel).service_name !=
-              TelepathyGLib.CLIENT_BUS_NAME_BASE + "Games.Glchess")
+              TelepathyGLib.CLIENT_BUS_NAME_BASE + "Gnome.Chess")
             continue;
 
           /* Add channel to list of currently handled channels */
@@ -911,7 +911,7 @@ public class HandlerApplication : Application
               TelepathyGLib.AccountManager.dup (),
               true,     /* Bypass approval */
               true,    /* Requests */
-              "Games.Glchess",
+              "Gnome.Chess",
               false,    /* Uniquify name */
               handle_channels);
 
@@ -924,7 +924,7 @@ public class HandlerApplication : Application
               1);
           filter.insert (
               TelepathyGLib.PROP_CHANNEL_TYPE_DBUS_TUBE_SERVICE_NAME,
-                TelepathyGLib.CLIENT_BUS_NAME_BASE + "Games.Glchess");
+                TelepathyGLib.CLIENT_BUS_NAME_BASE + "Gnome.Chess");
 
           (tp_handler as TelepathyGLib.BaseClient).add_handler_filter (filter);
 
