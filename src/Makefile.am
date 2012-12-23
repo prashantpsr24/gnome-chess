@@ -14,6 +14,7 @@ gnome_chess_SOURCES = \
 	gnome-chess.vala \
 	gnome-chess-application.vala \
 	chess-launcher.vala \
+	gnome-chess-handler-application.vala \
 	ai-profile.vala \
 	chess-bitboard.vala \
 	chess-clock.vala \
@@ -37,6 +38,7 @@ gnome_chess_channel_handler_SOURCES = \
 	gnome-chess-application.vala \
 	chess-launcher.vala \
 	gnome-chess-channel-handler.vala \
+	gnome-chess-handler-application.vala \
 	ai-profile.vala \
 	chess-bitboard.vala \
 	chess-clock.vala \
