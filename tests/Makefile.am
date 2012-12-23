@@ -10,16 +10,16 @@ LDADD = \
 	$(GNOME_CHESS_LIBS)
 
 test_demo_gdbus_server_CFLAGS = \
-	$(GIO_CFLAGS)
+	$(GNOME_CHESS_CFLAGS)
 
 test_demo_gdbus_server_LDADD = \
-	$(GIO_LIBS)
+	$(GNOME_CHESS_LIBS)
 
 test_demo_gdbus_client_CFLAGS = \
-	$(GIO_CFLAGS)
+	$(GNOME_CHESS_CFLAGS)
 
 test_demo_gdbus_client_LDADD = \
-	$(GIO_LIBS)
+	$(GNOME_CHESS_LIBS)
 
 test_demo_gdbus_server_VALAFLAGS = \
 	--pkg gio-2.0
