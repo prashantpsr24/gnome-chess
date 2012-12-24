@@ -301,10 +301,24 @@ public class ChessState
     {
     }
 
+    public ChessState.with_players (ChessPlayer white, ChessPlayer black, string fen)
+    {
+        players[Color.WHITE] = white;
+        players[Color.BLACK] = black;
+
+        constructor_helper (fen);
+    }
+
     public ChessState (string fen)
     {
         players[Color.WHITE] = new ChessPlayer (Color.WHITE);
         players[Color.BLACK] = new ChessPlayer (Color.BLACK);
+
+        constructor_helper (fen);
+    }
+
+    private void constructor_helper (string fen)
+    {
         for (int i = 0; i < 64; i++)
             board[i] = null;
 
@@ -386,6 +400,7 @@ public class ChessState
             number++;
 
         check_state = get_check_state (current_player);
+
     }
 
     public ChessState copy ()
