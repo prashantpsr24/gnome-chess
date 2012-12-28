@@ -11,7 +11,8 @@ LDADD = \
 telepathy_networking_tests = \
 	test-fetch-contacts \
 	offerer \
-	accepter
+	accepter \
+	test-tube-app
 
 plain_tests = \
 	test-demo-gdbus-client \
@@ -35,7 +36,8 @@ LDADD += \
 	$(GIO_LIBS)
 
 VALAFLAGS = \
-	--pkg gio-2.0
+	--pkg gio-2.0 \
+	--pkg telepathy-glib
 endif #ENABLE_NETWORKING
 
 
@@ -47,3 +49,4 @@ test_demo_gdbus_client_SOURCES = test-demo-gdbus-client.vala
 offerer_SOURCES = offerer.c constants.h
 accepter_SOURCES = accepter.c constants.h
 
+test_tube_app_SOURCES = test-tube-app.vala
