@@ -7,7 +7,7 @@ class GlChess
                                         ChessResult result = ChessResult.IN_PROGRESS,
                                         ChessRule rule = ChessRule.CHECKMATE)
     {
-        ChessState state = new ChessState (fen);
+        ChessState state = new ChessState (null, null, fen);
         test_count++;
         if (!state.move (move))
         {
@@ -44,7 +44,7 @@ class GlChess
 
     private static void test_bad_move (string fen, string move)
     {
-        ChessState state = new ChessState (fen);
+        ChessState state = new ChessState (null, null, fen);
         test_count++;
         if (state.move (move, false))
         {

@@ -537,8 +537,52 @@ public class HandlerApplication : Application
         chess_view.queue_draw ();
     }
 
-    private void create_and_add_game (TelepathyGLib.DBusTubeChannel tube,
+    private void fetch_players (DBusConnection conn,
+        TelepathyGLib.DBusTubeChannel tube,
         Gtk.TreeIter channel_iter)
+    {
+        RemoteChessPlayer white, black;
+        white = black = null;
+
+        /* Asynchronously fetch player objects from connection. Create game once both are in hand */
+
+        conn.get_proxy<RemoteChessPlayerIface>.begin (TelepathyGLib.CLIENT_BUS_NAME_BASE + "Gnome.Chess", "/org/freedesktop/Telepathy/Client/Gnome/Chess/ChessPlayer/White", DBusProxyFlags.DO_NOT_AUTO_START, null,
+            (obj, res)=>{
+
+                try {
+                    white = (RemoteChessPlayer) conn.get_proxy<RemoteChessPlayerIface>.end (res);
+
+                    if (white != null && black != null)
+                        create_and_add_game (tube, channel_iter, white, black);
+                }
+                catch (IOError e)
+                {
+                   debug ("couldn't fetch the white player: %s\n", e.message);
+                }
+              }
+            );
+
+        conn.get_proxy<RemoteChessPlayerIface>.begin (TelepathyGLib.CLIENT_BUS_NAME_BASE + "Gnome.Chess", "/org/freedesktop/Telepathy/Client/Gnome/Chess/ChessPlayer/Black", DBusProxyFlags.DO_NOT_AUTO_START, null,
+            (obj, res)=>{
+
+                try {
+                    black = (RemoteChessPlayer) conn.get_proxy<RemoteChessPlayerIface>.end (res);
+
+                    if (white != null && black != null)
+                        create_and_add_game (tube, channel_iter, white, black);
+                }
+                catch (IOError e)
+                {
+                   debug ("couldn't fetch the black player: %s\n", e.message);
+                }
+              }
+            );
+    }
+
+    private void create_and_add_game (TelepathyGLib.DBusTubeChannel tube,
+        Gtk.TreeIter channel_iter,
+        RemoteChessPlayerIface white,
+        RemoteChessPlayerIface black)
     {
         /* Create a new game with the offered parameters */
         Variant tube_params = tube.dup_parameters_vardict ();
@@ -580,7 +624,8 @@ public class HandlerApplication : Application
             else
                 warning ("Chess game has SetUp tag but no FEN tag");
         }
-        var game = new ChessGame (fen, moves);
+
+        var game = new ChessGame (fen, moves, (ChessPlayer) white, (ChessPlayer) black);
         (game as Object).set_data<PGNGame> ("pgn-game", pgn_game);
         (game as Object).set_data<string> ("channel-path-string", channels.get_string_from_iter (channel_iter));
         /* Associate history_model for access in scene_changed_cb */
@@ -669,7 +714,8 @@ public class HandlerApplication : Application
 
     private void register_objects (DBusConnection connection,
         TelepathyGLib.DBusTubeChannel tube,
-        Gtk.TreeIter channel_iter)
+        Gtk.TreeIter channel_iter,
+        string side)
     {
         debug ("Registering objects over dbus connection");
 
@@ -677,12 +723,43 @@ public class HandlerApplication : Application
         channels.@get (channel_iter, ChannelsColumn.CHESS_GAME, out game);
 
         Variant tube_params = tube.dup_parameters_vardict ();
-        bool play_as_white = (tube_params.lookup_value ("offerer-white", VariantType.BOOLEAN)).get_boolean ();
+        bool offerer_white = (tube_params.lookup_value ("offerer-white", VariantType.BOOLEAN)).get_boolean ();
+
+        bool play_as_white;
         ChessPlayer my_player;
-        my_player = play_as_white ? game.white : game.black;
+        if (side == "offerer")
+        {
+            if (offerer_white)
+            {
+                my_player = game.white;
+                play_as_white = true;
+            }
+            else
+            {
+                my_player = game.black;
+                play_as_white = false;
+            }
+        }
+        else
+        {
+            if (offerer_white)
+            {
+                my_player = game.black;
+                play_as_white = false;
+            }
+            else
+            {
+                my_player = game.white;
+                play_as_white = true;
+            }
+        }
 
         try {
-            connection.register_object<ChessPlayer> ("/org/freedesktop/Telepathy/Client/Gnome/Chess/ChessPlayer", my_player);
+            if (play_as_white)
+                connection.register_object<RemoteChessPlayer> ("/org/freedesktop/Telepathy/Client/Gnome/Chess/ChessPlayer/White", (RemoteChessPlayer) my_player);
+            else
+                connection.register_object<RemoteChessPlayer> ("/org/freedesktop/Telepathy/Client/Gnome/Chess/ChessPlayer/Black", (RemoteChessPlayer) my_player);
+
             debug ("ChessPlayer registered successfully");
         } catch (IOError e) {
             debug ("Could not register ChessPlayer object");
@@ -736,8 +813,10 @@ public class HandlerApplication : Application
                             TelepathyGLib.Channel).target_contact.identifier);
                     }
                 );
-                create_and_add_game (tube, channel_iter);
-                register_objects (connection, tube, channel_iter);
+
+                /* First load player objects. Then wait on them for creating ChessGame */
+                register_objects (connection, tube, channel_iter, "offerer");
+                fetch_players (connection, tube, channel_iter);
 
                 /* Now we can display the game */
                 channels.@set (channel_iter, ChannelsColumn.CHANNEL_APPROVED, true);
@@ -788,7 +867,10 @@ public class HandlerApplication : Application
                             TelepathyGLib.Channel).target_contact.identifier);
                     }
                 );
-                create_and_add_game (tube, channel_iter);
+
+                /* First load player objects. Then wait on them for creating ChessGame */
+                register_objects (connection, tube, channel_iter, "accepter");
+                fetch_players (connection, tube, channel_iter);
 
                 /* We can now display the game */
                 channels.@set (channel_iter, ChannelsColumn.CHANNEL_APPROVED, true);

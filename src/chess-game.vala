@@ -4,34 +4,34 @@ public enum Color
     BLACK
 }
 
+/* Client interface for RemoteChessPlayer on DBusConnection */
 [DBus (name = "org.gnome.Chess.ChessPlayer")]
+public interface RemoteChessPlayerIface : Object {
+    public signal bool do_move_remote (string move, bool apply);
+    public abstract bool resign () throws GLib.IOError;
+    public abstract bool claim_draw () throws GLib.IOError;
+}
+
+/* This is exported as server by offerer and accepter */
 public class ChessPlayer : Object
 {
-    [DBus (visible = false)]
-    public Color color;
-    [DBus (visible = false)]
+    public Color color {get; construct;}
     public signal void start_turn ();
     public signal bool do_move (string move, bool apply);
-    [DBus (visible = false)]
     public signal void do_undo ();
-    [DBus (visible = false)]
     public signal bool do_resign ();
-    [DBus (visible = false)]
     public signal bool do_claim_draw ();
 
-    [DBus (visible = false)]
     public ChessPlayer (Color color)
     {
-        this.color = color;
+        Object (color : color);
     }
 
-    [DBus (visible = false)]
     public bool move (string move, bool apply = true)
     {
         return do_move (move, apply);
     }
 
-    [DBus (visible = false)]
     public bool move_with_coords (int r0, int f0, int r1, int f1,
         bool apply = true, PieceType promotion_type = PieceType.QUEEN)
     {
@@ -58,7 +58,6 @@ public class ChessPlayer : Object
         return do_move (move, apply);
     }
 
-    [DBus (visible = false)]
     public void undo ()
     {
         do_undo ();
@@ -72,6 +71,16 @@ public class ChessPlayer : Object
     public bool claim_draw ()
     {
         return do_claim_draw ();
+    }
+}
+
+/* This gets exported on DBusConnection */
+[DBus (name = "org.gnome.Chess.ChessPlayer")]
+public class RemoteChessPlayer : ChessPlayer, RemoteChessPlayerIface
+{
+    public RemoteChessPlayer (Color color)
+    {
+        base (color);
     }
 }
 
@@ -301,24 +310,19 @@ public class ChessState
     {
     }
 
-    public ChessState.with_players (ChessPlayer white, ChessPlayer black, string fen)
+    public ChessState (ChessPlayer? white, ChessPlayer? black, string fen)
     {
-        players[Color.WHITE] = white;
-        players[Color.BLACK] = black;
+        if (white != null && black != null)
+        {
+            players[Color.WHITE] = white;
+            players[Color.BLACK] = black;
+        }
+        else
+        {
+            players[Color.WHITE] = new ChessPlayer (Color.WHITE);
+            players[Color.BLACK] = new ChessPlayer (Color.BLACK);
+        }
 
-        constructor_helper (fen);
-    }
-
-    public ChessState (string fen)
-    {
-        players[Color.WHITE] = new ChessPlayer (Color.WHITE);
-        players[Color.BLACK] = new ChessPlayer (Color.BLACK);
-
-        constructor_helper (fen);
-    }
-
-    private void constructor_helper (string fen)
-    {
         for (int i = 0; i < 64; i++)
             board[i] = null;
 
@@ -1227,6 +1231,9 @@ public class ChessGame : Object
     public ChessResult result;
     public ChessRule rule;
     public List<ChessState> move_stack;
+    /* For setting remote players to be used */
+    private ChessPlayer _white;
+    private ChessPlayer _black;
     
     private int hold_count = 0;
 
@@ -1246,10 +1253,18 @@ public class ChessGame : Object
     public ChessPlayer white
     {
         get { return current_state.players[Color.WHITE]; }
+        set
+        {
+          _white = value;
+        }
     }
     public ChessPlayer black
     {
         get { return current_state.players[Color.BLACK]; }
+        set
+        {
+          _black = value;
+        }
     }
     public ChessPlayer current_player
     {
@@ -1271,10 +1286,13 @@ public class ChessGame : Object
         }
     }
 
-    public ChessGame (string fen = STANDARD_SETUP, string[]? moves = null)
+    public ChessGame (string fen = STANDARD_SETUP, string[]? moves = null, ChessPlayer? white = null, ChessPlayer? black = null)
     {
+        Object (white : white, black : black);
         is_started = false;
-        move_stack.prepend (new ChessState (fen));
+
+        ChessState first_state = new ChessState (white, black, fen);
+        move_stack.prepend (first_state);
         result = ChessResult.IN_PROGRESS;
 
         if (moves != null)
@@ -1294,6 +1312,12 @@ public class ChessGame : Object
         black.do_undo.connect (undo_cb);
         black.do_resign.connect (resign_cb);
         black.do_claim_draw.connect (claim_draw_cb);
+        /* Connect to remote player's moves */
+        if (white is RemoteChessPlayerIface && black is RemoteChessPlayerIface)
+        {
+            (white as RemoteChessPlayerIface).do_move_remote.connect (remote_move_cb);
+            (black as RemoteChessPlayerIface).do_move_remote.connect (remote_move_cb);
+        }
     }
 
     private bool move_cb (ChessPlayer player, string move, bool apply)
@@ -1302,6 +1326,14 @@ public class ChessGame : Object
             return false;
 
         return do_move (player, move, apply);
+    }
+
+    private bool remote_move_cb (RemoteChessPlayerIface player, string move, bool apply)
+    {
+        if (!is_started)
+            return false;
+
+        return do_move ((ChessPlayer) player, move, apply);
     }
 
     private bool do_move (ChessPlayer player, string? move, bool apply)
