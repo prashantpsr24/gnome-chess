@@ -546,11 +546,11 @@ public class HandlerApplication : Application
 
         /* Asynchronously fetch player objects from connection. Create game once both are in hand */
 
-        conn.get_proxy<RemoteChessPlayerIface>.begin (TelepathyGLib.CLIENT_BUS_NAME_BASE + "Gnome.Chess", "/org/freedesktop/Telepathy/Client/Gnome/Chess/ChessPlayer/White", DBusProxyFlags.DO_NOT_AUTO_START, null,
+        conn.get_proxy.begin<RemoteChessPlayerIface> (TelepathyGLib.CLIENT_BUS_NAME_BASE + "Gnome.Chess", "/org/freedesktop/Telepathy/Client/Gnome/Chess/ChessPlayer/White", DBusProxyFlags.DO_NOT_AUTO_START, null,
             (obj, res)=>{
 
                 try {
-                    white = (RemoteChessPlayer) conn.get_proxy<RemoteChessPlayerIface>.end (res);
+                    white = (RemoteChessPlayer) conn.get_proxy.end<RemoteChessPlayerIface> (res);
 
                     if (white != null && black != null)
                         create_and_add_game (tube, channel_iter, white, black);
@@ -562,11 +562,11 @@ public class HandlerApplication : Application
               }
             );
 
-        conn.get_proxy<RemoteChessPlayerIface>.begin (TelepathyGLib.CLIENT_BUS_NAME_BASE + "Gnome.Chess", "/org/freedesktop/Telepathy/Client/Gnome/Chess/ChessPlayer/Black", DBusProxyFlags.DO_NOT_AUTO_START, null,
+        conn.get_proxy.begin<RemoteChessPlayerIface> (TelepathyGLib.CLIENT_BUS_NAME_BASE + "Gnome.Chess", "/org/freedesktop/Telepathy/Client/Gnome/Chess/ChessPlayer/Black", DBusProxyFlags.DO_NOT_AUTO_START, null,
             (obj, res)=>{
 
                 try {
-                    black = (RemoteChessPlayer) conn.get_proxy<RemoteChessPlayerIface>.end (res);
+                    black = (RemoteChessPlayer) conn.get_proxy.end<RemoteChessPlayerIface> (res);
 
                     if (white != null && black != null)
                         create_and_add_game (tube, channel_iter, white, black);
