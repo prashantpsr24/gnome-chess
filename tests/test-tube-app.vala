@@ -2,7 +2,7 @@
 
 [DBus (name = "org.gnome.RemoteGame.OfferedObject")]
 public interface RemoteObjectIface : Object {
-    public abstract string word {get; construct;}
+    public abstract string word {owned get; set;}
     public signal bool do_move_remote (string verb);
     public abstract void remote_yell () throws GLib.IOError;
 }
@@ -53,10 +53,10 @@ public class RemoteGameHandler : Application
         string say = (tube_params.lookup_value ("say", VariantType.STRING)).get_string ();
 
         RemoteObject my_object = new RemoteObject (say);
-        my_object.do_move_remote.connect ((obj, verb)=>{stdout.printf (verb + "ing the " + obj.word);});
+        my_object.do_move_remote.connect ((obj, verb)=>{stdout.printf (verb + "ing the " + obj.word); return true;});
 
         try {
-                connection.register_object<RemoteObject> ("/org/freedesktop/Telepathy/Client/RemoteGame/OfferedObject", my_object);
+                connection.register_object<RemoteObjectIface> ("/org/freedesktop/Telepathy/Client/RemoteGame/OfferedObject", my_object);
 
                 debug ("Object registered successfully");
         } catch (IOError e) {
@@ -82,11 +82,11 @@ public class RemoteGameHandler : Application
     {
         RemoteObject close_object = null;
 
-        conn.get_proxy<RemoteObjectIface>.begin (null, "/org/freedesktop/Telepathy/Client/RemoteGame/OfferedObject", 0, null,
+        conn.get_proxy.begin<RemoteObjectIface> (null, "/org/freedesktop/Telepathy/Client/RemoteGame/OfferedObject", 0, null,
             (obj, res)=>{
 
                 try {
-                    close_object = (RemoteObject) conn.get_proxy<RemoteObjectIface>.end (res);
+                    close_object = (RemoteObject) conn.get_proxy.end<RemoteObjectIface> (res);
                     if (close_object != null)
                     {
                         use_object (close_object);
@@ -255,14 +255,20 @@ public class RemoteGameHandler : Application
         req.ensure_channel_async.begin ("", null);
     }
 
+    public override void activate ()
+    {
+    }
+
     public override void startup ()
     {
+        base.startup ();
+
         string account_path = TelepathyGLib.ACCOUNT_OBJECT_PATH_BASE + my_account;
-        TelepathyGLib.Account account;
+        TelepathyGLib.Account account = null;
         TelepathyGLib.AutomaticClientFactory factory = new TelepathyGLib.AutomaticClientFactory (null);
 
         var immutable_acc_props = new HashTable<string, Value?> (str_hash, str_equal);
-        Quark features[] = {};
+        Quark[] features = {};
         features += TelepathyGLib.Account.get_feature_quark_connection ();
         factory.add_account_features (features);
 
@@ -354,9 +360,17 @@ public class RemoteGameHandler : Application
 
 class TestTubeApp
 {
-    public static void main (string args [])
+    public static int main (string[] args)
     {
+        if (args.length < 3)
+        {
+            stdout.printf ("Usage: test-tube-app <account> <remote-player-id>\n");
+            return 0;
+        }
+
         RemoteGameHandler app = new RemoteGameHandler (args[1],  args[2]);
-        app.run ();
+        var result = app.run ();
+
+        return result;
     }
 }
