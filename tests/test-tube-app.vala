@@ -45,7 +45,7 @@ public class RemoteGameHandler : Application
         service = TelepathyGLib.CLIENT_BUS_NAME_BASE + "Remote.Game";
     }
 
-    private void register_objects (DBusConnection connection, TelepathyGLib.DBusTubeChannel tube, string side)
+    private void register_objects (DBusConnection connection, TelepathyGLib.DBusTubeChannel tube)
     {
         debug ("Registering objects over dbus connection");
 
@@ -94,7 +94,7 @@ public class RemoteGameHandler : Application
                 }
                 catch (IOError e)
                 {
-                   debug ("couldn't fetch the white player: %s\n", e.message);
+                   debug ("couldn't fetch remote object: %s\n", e.message);
                 }
               }
             );
@@ -137,8 +137,8 @@ public class RemoteGameHandler : Application
                 );
 
                 /* First load player objects. Then wait on them for creating Game */
-                register_objects (connection, tube, "offerer");
-                fetch_objects (connection, tube);
+                register_objects (connection, tube);
+                //fetch_objects (connection, tube);
               }
             );
     }
@@ -174,7 +174,7 @@ public class RemoteGameHandler : Application
                 );
 
                 /* First load player objects. Then wait on them for creating ChessGame */
-                register_objects (connection, tube, "accepter");
+                //register_objects (connection, tube);
                 fetch_objects (connection, tube);
               }
             );
@@ -334,19 +334,20 @@ public class RemoteGameHandler : Application
             TelepathyGLib.PROP_CHANNEL_TYPE_DBUS_TUBE_SERVICE_NAME,
             new Variant.string (service));
 
-        bool channel_dispatched = false;
-        req.create_channel_async.begin (service, null,
+        req.create_and_handle_channel_async.begin (null,
             (obj, res)=>{
+                TelepathyGLib.HandleChannelsContext context;
+                TelepathyGLib.Channel channel = null;
                 try
                 {
-                     channel_dispatched = req.create_channel_async.end (res);
+                     channel = req.create_and_handle_channel_async.end (res, out context);
                 }
                 catch (Error e)
                 {
                      debug ("Failed to create channel: %s", e.message);
                 }
 
-                if (channel_dispatched)
+                if (channel != null)
                   debug ("DBus channel with %s successfully dispatched.",
                       remote_id);
                 else
