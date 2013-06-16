@@ -28,7 +28,8 @@ public class RemoteObject : LocalObject, RemoteObjectIface
 
     public void remote_yell ()
     {
-        stdout.printf ("I am happy!");
+        stdout.printf ("\nEverybody yell, \"I am happy!\"");
+        do_move_remote ("bake");
     }
 }
 
@@ -49,12 +50,10 @@ public class RemoteGameHandler : Application
     {
         debug ("Registering objects over dbus connection");
 
-        Variant tube_params = tube.dup_parameters_vardict ();
-        string say = (tube_params.lookup_value ("say", VariantType.STRING)).get_string ();
+//        Variant tube_params = tube.dup_parameters_vardict ();
+//        string say = (tube_params.lookup_value ("say", VariantType.STRING)).get_string ();
 
-        RemoteObject my_object = new RemoteObject (say);
-        my_object.do_move_remote.connect ((obj, verb)=>{stdout.printf (verb + "ing the " + obj.word); return true;});
-
+        RemoteObject my_object = new RemoteObject ("Yay!");//say);
         try {
                 connection.register_object<RemoteObjectIface> ("/org/freedesktop/Telepathy/Client/RemoteGame/OfferedObject", my_object);
 
@@ -64,37 +63,40 @@ public class RemoteGameHandler : Application
         }
     }
 
-    private void use_object (RemoteObject object)
+    private void use_object (RemoteObjectIface object)
     {
-        stdout.printf ("I got a " + object.word);
-        stdout.printf ("Using fetched objects.");
-        object.do_move_remote ("bake");
-        stdout.printf ("Hurting fetched objects.");
+        stdout.printf ("\nI got a word:" + object.word);
+        stdout.printf ("\nUsing fetched objects.");
+       
         try {
             object.remote_yell ();
         } catch (IOError e)
         {
-            stdout.printf ("Couldn't hurt.. : %s", e.message);
+            stdout.printf ("\nCouldn't make remote yell. : %s", e.message);
+            this.release ();
         }
     }
 
     private void fetch_objects (DBusConnection conn, TelepathyGLib.DBusTubeChannel tube)
     {
-        RemoteObject close_object = null;
+        RemoteObjectIface close_object = null;
 
         conn.get_proxy.begin<RemoteObjectIface> (null, "/org/freedesktop/Telepathy/Client/RemoteGame/OfferedObject", 0, null,
             (obj, res)=>{
 
                 try {
-                    close_object = (RemoteObject) conn.get_proxy.end<RemoteObjectIface> (res);
+                    close_object = conn.get_proxy.end<RemoteObjectIface> (res);
                     if (close_object != null)
                     {
+                        close_object.do_move_remote.connect ((obj, verb)=>{stdout.printf (verb + "ing the " + obj.word); return true;});
+
                         use_object (close_object);
                     }
                 }
                 catch (IOError e)
                 {
                    debug ("couldn't fetch remote object: %s\n", e.message);
+                   this.release ();
                 }
               }
             );
@@ -186,6 +188,7 @@ public class RemoteGameHandler : Application
         string message)
     {
         debug ("Tube has been invalidated: %s", message);
+        this.release ();
     }
 
     public void handle_channels (TelepathyGLib.SimpleHandler handler,
@@ -198,8 +201,6 @@ public class RemoteGameHandler : Application
     {
         Error error = new TelepathyGLib.Error.NOT_AVAILABLE ("No channel to be handled");
 
-        debug ("Handling channels");
-
         foreach (TelepathyGLib.Channel tube_channel in channel_bundle)
         {
           if (! (tube_channel is TelepathyGLib.DBusTubeChannel))
@@ -210,11 +211,13 @@ public class RemoteGameHandler : Application
 
           if (tube_channel.requested)
           {
+              debug ("offerer: Handling channels");
               /* We created this channel. Make a tube offer and wait for approval */
               offer_tube (tube_channel as TelepathyGLib.DBusTubeChannel);
           }
           else
           {
+              debug ("accepter: Handling channels");
               /* This is an incoming channel request */
               accept_tube (tube_channel as TelepathyGLib.DBusTubeChannel);
           }
@@ -303,6 +306,7 @@ public class RemoteGameHandler : Application
 
         try {
             (tp_handler as TelepathyGLib.BaseClient).register ();
+            debug ("Handler registered");
         }
         catch (Error e) {
             debug ("Failed to register handler: %s", e.message);
@@ -334,27 +338,38 @@ public class RemoteGameHandler : Application
             TelepathyGLib.PROP_CHANNEL_TYPE_DBUS_TUBE_SERVICE_NAME,
             new Variant.string (service));
 
-        req.create_and_handle_channel_async.begin (null,
+        req.create_channel_async.begin (service, null,
             (obj, res)=>{
-                TelepathyGLib.HandleChannelsContext context;
-                TelepathyGLib.Channel channel = null;
+                //TelepathyGLib.Channel channel = null;
+                bool created = false;
                 try
                 {
-                     channel = req.create_and_handle_channel_async.end (res, out context);
+                     created = req.create_channel_async.end (res);
                 }
                 catch (Error e)
                 {
                      debug ("Failed to create channel: %s", e.message);
+                     this.release ();
                 }
 
-                if (channel != null)
-                  debug ("DBus channel with %s successfully dispatched.",
-                      remote_id);
+                if (created)
+                {
+                  debug ("DBus channel with %s successfully created",
+                      remote_id);//, channel.get_object_path ());
+
+                  //(channel as TelepathyGLib.Proxy).invalidated.connect (tube_invalidated_cb);
+                  
+                }
                 else
+                {
                   debug ("Unsuccessful in creating and dispatching DBus channel with %s.",
                       remote_id);
+                  this.release ();
+                }
               }
             );
+
+        this.hold ();
 
     }
 }
