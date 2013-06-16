@@ -756,11 +756,16 @@ public class HandlerApplication : Application
 
         try {
             if (play_as_white)
+            {
                 connection.register_object<RemoteChessPlayer> ("/org/freedesktop/Telepathy/Client/Gnome/Chess/ChessPlayer/White", (RemoteChessPlayer) my_player);
+                debug ("White chess player registered");
+            }
             else
+            {
                 connection.register_object<RemoteChessPlayer> ("/org/freedesktop/Telepathy/Client/Gnome/Chess/ChessPlayer/Black", (RemoteChessPlayer) my_player);
+                debug ("Black chess player registered");
+            }
 
-            debug ("ChessPlayer registered successfully");
         } catch (IOError e) {
             debug ("Could not register ChessPlayer object");
         }
