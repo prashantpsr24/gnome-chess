@@ -3,17 +3,27 @@
       id="play">
   <info>
     <link type="guide" xref="index#play" />
-    <revision version="0.1" date="2011-12-10" status="stub"/>
+    <revision version="3.14" date="2014-07-30" status="stub"/>
 
-    <credit type="author copyright">
-      <name></name>
-      <email></email>
-      <years>2011</years>
+    <credit type="author">
+      <name>Rashi Aswani</name>
+      <email>aswanirashi19@gmail.com</email>
+      <years>2014</years>
     </credit>
 
-    <desc></desc>
+    <desc>How to play?</desc>
   </info>
 
   <title>How to Play</title>
-
+  <p>Chess displays the main game window at the start:</p>
+  <media type="image" src="figures/game-3-12.png"/>
+    <p>The game is played by moving chess pieces using the mouse. Each player
+    alternates to move a piece in the appropriate colour, from one board
+    position to another valid board position. To move a chess piece:</p>
+    <steps>
+      <item><p>Click on the desired chess piece to move. You can see the
+      possible squares highlighted, where the chess piece can move.</p></item>
+      <item><p>Click on the square where you want to place the chess
+      piece.</p></item>
+    </steps>
 </page>
