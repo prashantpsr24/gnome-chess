@@ -14,7 +14,7 @@
     <desc>How to play?</desc>
   </info>
 
-  <title>How to Play</title>
+  <title>Play <app>Chess</app></title>
   <p>Chess displays the main game window at the start:</p>
   <media type="image" src="figures/game-3-12.png"/>
     <p>The game is played by moving chess pieces using the mouse. Each player
