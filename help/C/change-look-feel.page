@@ -3,17 +3,29 @@
       id="change-look-feel">
   <info>
     <link type="guide" xref="index#tips" />
-    <revision version="0.1" date="2011-12-10" status="stub"/>
+    <revision version="3.14" date="2014-07-31" status="review"/>
 
-    <credit type="author copyright">
-      <name></name>
-      <email></email>
-      <years>2011</years>
+    <credit type="author">
+      <name>Rashi Aswani</name>
+      <email>aswanirashi19@gmail.com</email>
+      <years>2014</years>
     </credit>
 
-    <desc></desc>
+    <desc>Make the game more interesting.</desc>
   </info>
 
   <title>Change look and feel</title>
-
+  <p>You can make the game more interesting by changing its appearance. To
+  change:</p>
+  <steps>
+    <item><p>Click <guiseq><gui style="menu">Chess</gui>
+    <gui style="menuitem">Preferences</gui></guiseq>.</p>
+    </item>
+    <item><p>Select the <gui style="tab">Appearance</gui> tab.</p></item>
+    <item><p>The default <gui>Move format</gui> is <gui>Human</gui>, you can
+    set it to <gui>Standard Algebraic</gui>, <gui>Figurine</gui> or
+    <gui>Long Algebraic</gui>.</p></item>
+    <item><p>You can change the chess pieces as well, to change set the
+    <gui>Piece Style</gui> to <gui>Fancy</gui>.</p></item>
+  </steps>
 </page>
