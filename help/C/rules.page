@@ -73,5 +73,10 @@
     promoted (converted) to a queen, rook, bishop, or knight of the same color.
     </p></item>
   </list>
+  <note style="important">
+    <p>You can only put the king in check, it can not be captured. If a player
+    is unable to get the king out of check, checkmate results with the loss of
+    the game.</p>
+  </note>
   </section>
 </page>
