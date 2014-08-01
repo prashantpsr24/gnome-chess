@@ -2,12 +2,32 @@
 HELP_ID = gnome-chess
 
 HELP_MEDIA = \
+	figures/game-3-14.png \
 	figures/logo.png \
-	figures/logo32.png 
+	figures/logo32.png \
+	figures/preferences-appearance-3-14.png \
+	figures/preferences-game-3-14.png 
 
 HELP_FILES = \
+	bug-filing.page \
+	change-board-orientation.page \
+	change-look-feel.page \
+	change-promotion-type.page \
+	chess-engines.page \
+	develop.page \
+	documentation.page \
 	index.page \
-	legal.xml
+	legal.xml \
+	license.page \
+	network-game.page \
+	play.page \
+	rules.page \
+	save-resume.page \
+	shortcuts.page \
+	start-game.page \
+	strategy.page \
+	translate.page
+	
 
 HELP_LINGUAS =
 
