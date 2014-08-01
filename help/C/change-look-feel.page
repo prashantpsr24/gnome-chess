@@ -21,11 +21,17 @@
     <item><p>Click <guiseq><gui style="menu">Chess</gui>
     <gui style="menuitem">Preferences</gui></guiseq>.</p>
     </item>
-    <item><p>Select the <gui style="tab">Appearance</gui> tab.</p></item>
+    <item><p>Select the <gui style="tab">Appearance</gui> tab. The
+    <gui>Appearance</gui> looks like:</p><media type="image"
+    src="figures/preferences-appearance-3-14.png"/></item>
     <item><p>The default <gui>Move format</gui> is <gui>Human</gui>, you can
     set it to <gui>Standard Algebraic</gui>, <gui>Figurine</gui> or
     <gui>Long Algebraic</gui>.</p></item>
     <item><p>You can change the chess pieces as well, to change set the
     <gui>Piece Style</gui> to <gui>Fancy</gui>.</p></item>
+    <item><p>You can get the board numbering by checking the <gui
+    style="checkbox">Board numbering</gui>.</p></item>
+    <item><p>To get the hints while moving, check the <gui
+    style="checkbox">Move hints</gui>.</p></item>
   </steps>
 </page>

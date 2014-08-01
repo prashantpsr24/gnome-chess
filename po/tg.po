@@ -30,7 +30,7 @@ msgstr ""
 
 #: ../data/glchess.desktop.in.in.h:3
 msgid "game;strategy;"
-msgstr ""
+msgstr ";"
 
 #. Game menu name
 #: ../data/gnome-chess.ui.h:2
