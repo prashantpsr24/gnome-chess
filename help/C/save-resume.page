@@ -5,7 +5,7 @@
   <info>
    <link type="guide" xref="index#play"/>
     
-    <revision pkgversion="3.4" version="0.1" date="2012-01-15" status="review"/>
+    <revision pkgversion="3.14" version="3.14" date="2014-08-02" status="review"/>
     <credit type="author">
       <name>Brian Grohe</name>
       <email>grohe43@gmail.com</email>
@@ -14,10 +14,14 @@
       <name>Tiffany Antopolski</name>
       <email>tiffany.antopolski@gmail.com</email>
     </credit>
+    <credit type="editor">
+      <name>Rashi Aswani</name>
+      <email>aswanirashi19@gmail.com</email>
+    </credit>
 
-    <license>
-      <p>Creative Commons Share Alike 3.0</p>
-    </license>
+    <include href="legal.xml" xmlns="http://www.w3.org/2001/XInclude" />
+
+    <desc>Save your game.</desc>
   </info>
 
 <title>Save and resume</title>
@@ -26,8 +30,10 @@
     <title>Saving your game</title>
       <p>To save your game:</p>
       <steps>
-        <item><p>Click <guiseq><gui>Game</gui><gui>Save As</gui></guiseq>.</p></item>
-        <item><p>Select a location for your game. It is best to save it in a location you will easily remember for future retrieval.</p></item>
+        <item><p>Click <gui style="button">Save the current game</gui>.</p>
+        </item>
+        <item><p>Select a location for your game. It is best to save it in a
+        location you will easily remember for future retrieval.</p></item>
         <item><p>Click <gui>Save</gui>.</p></item>
       </steps>
   </section>
@@ -36,8 +42,7 @@
     <title>Resuming your game</title>
       <p>To resume a previously saved game:</p>
      <steps>
-       <item><p>Click <guiseq><gui>Game</gui><gui>Open</gui></guiseq>.</p></item>
-       <item><p>Ensure the <gui>All Files</gui> option is selected in the Files view.</p></item>
+       <item><p>Click <gui>Open a saved game</gui>.</p></item>
        <item><p>Select the file for your saved game.</p></item>
        <item><p>Click <gui>Open</gui>.</p></item>
      </steps>
