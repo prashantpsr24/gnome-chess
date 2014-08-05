@@ -28,7 +28,7 @@
     
   <section id="save">
     <title>Saving your game</title>
-      <p>To save your game:</p>
+      <p>You can save the game and load it at any time. To save:</p>
       <steps>
         <item><p>Click <gui style="button">Save the current game</gui>.</p>
         </item>
