@@ -1,19 +1,46 @@
 <page xmlns="http://projectmallard.org/1.0/"
+      xmlns:its="http://www.w3.org/2005/11/its"
       type="topic" style="task"
       id="chess-engines">
   <info>
     <link type="guide" xref="index#advanced" />
-    <revision version="0.1" date="2011-12-10" status="stub"/>
+    <revision version="3.14" date="2014-08-06" status="stub"/>
 
-    <credit type="author copyright">
-      <name></name>
-      <email></email>
-      <years>2011</years>
+    <credit type="author">
+      <name>Rashi Aswani</name>
+      <email its:translate="no">aswanirashi19@gmail.com</email>
+      <years>2014</years>
     </credit>
 
-    <desc></desc>
+    <include href="legal.xml" xmlns="http://www.w3.org/2001/XInclude" />
+
+    <desc>Create your own chess engine.</desc>
   </info>
 
   <title>Chess engines</title>
-
+  <p><app>GNOME Chess</app> supports any Chess Engine Communication Protocol
+  or Universal Chess Interface compatible chess engines. You can edit the
+  <file>gnome-chess/data/engines.conf</file> for the desired engine.</p>
+  <steps>
+    <item><p>To edit the file for just yourself, copy it from
+    <file>$(datadir)/gnome-chess/engines.conf</file> to
+    <file>$XDG_CONFIG_HOME/gnome-chess/engines.conf</file>. These will usually
+    be <file>/etc/gnome-chess/engines.conf</file> and
+    <file>~/.config/gnome-chess/engines.conf</file>, but some distros are
+    different.</p></item>
+    <item><p>To edit for all users using root privledges, you can edit
+    <file>$(datadir)/gnome-chess/engines.conf</file> directly.</p></item>
+    <item><p>You can use the delay-before-move option to select how long
+    <app>Chess</app> should wait before reporting the human's move to the engine.
+    The default value of delay is 2 seconds.</p></item>
+    <item><p><app>Chess</app> can pass options to a UCI engine each time the engine
+    is told to move. To know which options it supports, you can check the
+    engine's documentation.</p></item>
+    <item><p>The other options get passed to the chess engine when the game
+    starts.</p></item>
+    <item><p>You can also pass different options to the engine binary depending
+    on difficulty level, see the GNU Chess and Phalanx configurations to know
+    more.</p></item>
+  </steps>
+  
 </page>
