@@ -14,15 +14,21 @@
       <name>Tiffany Antopolski</name>
       <email>tiffany.antopolski@gmail.com</email>
     </credit>
+    <credit type="editor">
+      <name>Rashi Aswani</name>
+      <email>aswanirashi19@gmail.com</email>
+    </credit>
 
   </info>
 
   <title>Change promotion type</title>
     <p>To change the <link xref="rules#promotion">promotion type</link> of the pawn:</p>
       <steps>
-       <item><p>Click <guiseq><gui>Settings</gui><gui>Preferences</gui></guiseq>.</p></item>
-       <item><p>Select the <gui>Game</gui> tab.</p></item>
-       <item><p>Select your desired <gui>Promotion Type</gui> from the dropdown menu.</p></item>
-       <item><p>Click <gui>Close</gui>.</p></item>
+       <item><p>Once a pawn advances all the way to its eighth rank, it can be
+       promoted to a <gui style="button">Queen</gui>, <gui
+       style="button">Knight</gui>, <gui style="button">Rook</gui> or <gui
+       style="button">Bishop</gui>.</p></item>
+       <item><p>Select your desired <gui>Promotion Type</gui>.</p></item>
+       <item><p>The pawn will be promoted to the selected promotion type.</p></item>
      </steps>
 </page>
