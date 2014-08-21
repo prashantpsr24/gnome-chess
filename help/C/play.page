@@ -16,7 +16,7 @@
 
   <title>Play <app>Chess</app></title>
   <p>Chess displays the main game window at the start:</p>
-  <media type="image" src="figures/game-3-12.png"/>
+  <media type="image" src="figures/game-3-14.png"/>
     <p>The game is played by moving chess pieces using the mouse. Each player
     alternates to move a piece in the appropriate colour, from one board
     position to another valid board position. To move a chess piece:</p>
