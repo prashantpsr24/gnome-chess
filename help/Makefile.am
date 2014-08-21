@@ -6,7 +6,7 @@ HELP_MEDIA = \
 	figures/logo.png \
 	figures/logo32.png \
 	figures/preferences-appearance-3-14.png \
-	figures/preferences-game-3-14.png 
+	figures/preferences-game-3-14.png
 
 HELP_FILES = \
 	bug-filing.page \
@@ -19,15 +19,12 @@ HELP_FILES = \
 	index.page \
 	legal.xml \
 	license.page \
-	network-game.page \
 	play.page \
 	rules.page \
 	save-resume.page \
 	shortcuts.page \
 	start-game.page \
-	strategy.page \
 	translate.page
-	
 
 HELP_LINGUAS =
 
