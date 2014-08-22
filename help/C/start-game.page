@@ -4,7 +4,7 @@
 
   <info>
     <link type="guide" xref="index#play"/>
-    <revision version="3.14" date="2014-07-3" status="review"/>
+    <revision version="3.14" date="2014-07-03" status="review"/>
 
     <credit type="author">
       <name>Rashi Aswani</name>
@@ -15,13 +15,12 @@
     <include href="legal.xml" xmlns="http://www.w3.org/2001/XInclude" />
 
     <desc>Play another game.</desc>
-
   </info>
 
   <title>Start a new game</title>
 
   <p>You can start playing a new game, save the current game and continue
-  playing it after sometime. To start a new game: </p>
+  playing it after sometime. To start a new game:</p>
     <steps>
       <item><p>Click the <gui style="button">New Game</gui> button on the
        toolbar.</p></item>
